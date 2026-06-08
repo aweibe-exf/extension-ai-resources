@@ -950,6 +950,94 @@
       margin: 0 auto;
     }
 
+    /* ── Pagination ── */
+    .pagination-wrap {
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .page-btn {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.13s;
+      display: grid;
+      place-items: center;
+      white-space: nowrap;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+      font-weight: 600;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .page-ellipsis {
+      width: 32px;
+      text-align: center;
+      color: var(--text-3);
+      font-size: 14px;
+      line-height: 36px;
+    }
+
+    .per-page-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .per-page-wrap span {
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    .per-page-btn {
+      padding: 5px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.13s;
+    }
+
+    .per-page-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .per-page-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
+
     /* ── Expandable descriptions ── */
     .desc-wrap.expanded .card-description,
     .desc-wrap.expanded .list-desc {
@@ -1171,6 +1259,13 @@
   <div class="results-bar">
     <div class="results-count" id="resultsCount" aria-live="polite" aria-atomic="true">Loading…</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="per-page-wrap" role="group" aria-label="Results per page">
+        <span>Show:</span>
+        <button class="per-page-btn" data-size="10" aria-pressed="false">10</button>
+        <button class="per-page-btn active" data-size="25" aria-pressed="true">25</button>
+        <button class="per-page-btn" data-size="50" aria-pressed="false">50</button>
+        <button class="per-page-btn" data-size="100" aria-pressed="false">100</button>
+      </div>
       <div class="sort-wrap">
         <label for="sortSelect">Sort:</label>
         <div class="select-wrap">
@@ -1211,10 +1306,11 @@
 
   <div id="cardsContainer">
     <div class="spinner-wrap">
-      <div class="spinner"></div>
+      <div class="spinner" role="status" aria-label="Loading resources"></div>
       <span>Loading resources…</span>
     </div>
   </div>
+  <div id="paginationWrap" class="pagination-wrap" aria-label="Pagination"></div>
 </main>
 
 <footer class="footer">
@@ -1271,6 +1367,8 @@ let catColorMap   = {};
 let instList      = [];
 let sortBy        = 'date-asc';
 let currentView   = 'list';
+let currentPage   = 1;
+let pageSize      = 25;
 
 const filters = {
   search:       '',
@@ -1464,6 +1562,7 @@ function applyFilters() {
     }
   });
 
+  currentPage = 1;
   renderCards();
   updateResultsCount();
   updateSelectStyles();
@@ -1488,13 +1587,18 @@ function renderCards() {
     return;
   }
 
+  const start = (currentPage - 1) * pageSize;
+  const pageData = filteredData.slice(start, start + pageSize);
+
   if (currentView === 'card') {
-    el.innerHTML = `<div class="cards-grid" role="list">${filteredData.map(renderCard).join('')}</div>`;
+    el.innerHTML = `<div class="cards-grid" role="list">${pageData.map(renderCard).join('')}</div>`;
   } else if (currentView === 'compact') {
-    el.innerHTML = `<div class="compact-view" role="list">${filteredData.map(renderCompactItem).join('')}</div>`;
+    el.innerHTML = `<div class="compact-view" role="list">${pageData.map(renderCompactItem).join('')}</div>`;
   } else {
-    el.innerHTML = `<div class="list-view" role="list">${filteredData.map(renderListItem).join('')}</div>`;
+    el.innerHTML = `<div class="list-view" role="list">${pageData.map(renderListItem).join('')}</div>`;
   }
+
+  renderPagination();
 }
 
 function renderListItem(row) {
@@ -1866,6 +1970,57 @@ document.getElementById('sortSelect').addEventListener('change', e => {
 });
 
 document.getElementById('clearAll').addEventListener('click', clearAllFilters);
+
+// ── Per-page ──────────────────────────────────────────────────────────
+document.querySelector('.per-page-wrap').addEventListener('click', e => {
+  const btn = e.target.closest('.per-page-btn');
+  if (!btn) return;
+  pageSize = parseInt(btn.dataset.size);
+  currentPage = 1;
+  document.querySelectorAll('.per-page-btn').forEach(b => {
+    b.classList.toggle('active', b === btn);
+    b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+  });
+  renderCards();
+  requestAnimationFrame(checkDescriptionOverflow);
+});
+
+// ── Pagination ───────────────────────────────────────────────────────
+function renderPagination() {
+  const wrap = document.getElementById('paginationWrap');
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+
+  if (totalPages <= 1) { wrap.innerHTML = ''; return; }
+
+  const pages = getPageNumbers(currentPage, totalPages);
+
+  wrap.innerHTML = `
+    <nav class="pagination" aria-label="Results pages">
+      <button class="page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''} aria-label="Previous page">← Prev</button>
+      ${pages.map(p => p === '…'
+        ? `<span class="page-ellipsis" aria-hidden="true">…</span>`
+        : `<button class="page-btn ${p === currentPage ? 'active' : ''}" data-page="${p}"
+             aria-label="Page ${p}" ${p === currentPage ? 'aria-current="page"' : ''}>${p}</button>`
+      ).join('')}
+      <button class="page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Next page">Next →</button>
+    </nav>`;
+
+  wrap.querySelector('.pagination').addEventListener('click', e => {
+    const btn = e.target.closest('.page-btn:not(:disabled)');
+    if (!btn) return;
+    currentPage = parseInt(btn.dataset.page);
+    renderCards();
+    requestAnimationFrame(checkDescriptionOverflow);
+    document.getElementById('main-content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+}
+
+function getPageNumbers(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '…', total];
+  if (current >= total - 3) return [1, '…', total-4, total-3, total-2, total-1, total];
+  return [1, '…', current - 1, current, current + 1, '…', total];
+}
 
 // ── Expandable descriptions ──────────────────────────────────────────
 document.getElementById('cardsContainer').addEventListener('click', e => {
