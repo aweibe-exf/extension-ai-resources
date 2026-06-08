@@ -18,7 +18,7 @@
       --border: #e2e8f0;
       --text: #0f172a;
       --text-2: #475569;
-      --text-3: #94a3b8;
+      --text-3: #64748b;
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
       --primary-bg: #eff6ff;
@@ -177,7 +177,7 @@
 
     .hero-content { position: relative; max-width: 640px; margin: 0 auto; }
 
-    .hero h2 {
+    .hero h1 {
       font-size: 34px;
       font-weight: 700;
       color: white;
@@ -187,7 +187,7 @@
 
     .hero p {
       font-size: 16px;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255,255,255,0.95);
       line-height: 1.65;
       margin-bottom: 28px;
     }
@@ -213,7 +213,7 @@
 
     .stat-label {
       font-size: 11px;
-      color: rgba(255,255,255,0.65);
+      color: rgba(255,255,255,0.92);
       margin-top: 3px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -950,6 +950,48 @@
       margin: 0 auto;
     }
 
+    /* ── Accessibility ── */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: -100px;
+      left: 16px;
+      z-index: 1000;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .skip-link:focus { top: 0; outline: 3px solid white; outline-offset: 2px; }
+
+    :focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    .header-search input:focus-visible { outline: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+      .spinner { animation: none; border-top-color: var(--primary); opacity: 0.6; }
+    }
+
     /* ── Responsive ── */
     @media (max-width: 900px) {
       .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 10px; }
@@ -973,6 +1015,8 @@
 </head>
 <body>
 
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <!-- ── Header ── -->
 <header class="header">
   <div class="header-inner">
@@ -992,7 +1036,7 @@
       <svg class="search-icon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
       </svg>
-      <input type="text" id="searchInput" placeholder="Search by name, topic, institution…" autocomplete="off">
+      <input type="text" id="searchInput" placeholder="Search by name, topic, institution…" autocomplete="off" aria-label="Search resources">
     </div>
 
     <div class="header-actions">
@@ -1010,8 +1054,8 @@
 <!-- ── Hero ── -->
 <section class="hero">
   <div class="hero-content">
-    <h2>Cooperative Extension AI Assets</h2>
-    <p style="font-size:13px; opacity:0.7; margin-bottom:18px; line-height:1.6;">
+    <h1>Cooperative Extension AI Assets</h1>
+    <p style="font-size:13px; color:rgba(255,255,255,0.93); margin-bottom:18px; line-height:1.6;">
       Brought together in partnership between the Extension Committee on Organization and Policy's AI Program Action Team,
       the National Digital Extension Education Team, and the Extension Foundation.
     </p>
@@ -1038,9 +1082,9 @@
 
     <!-- Row 1: Category pills -->
     <div class="filters-row">
-      <span class="filter-label">Category</span>
-      <div class="category-pills" id="categoryPills">
-        <button class="pill active" data-value="">All</button>
+      <span class="filter-label" id="categoryLabel">Category</span>
+      <div class="category-pills" id="categoryPills" role="group" aria-labelledby="categoryLabel">
+        <button class="pill active" data-value="" aria-pressed="true">All</button>
       </div>
     </div>
 
@@ -1048,48 +1092,49 @@
     <div class="filters-row" id="secondaryFilters">
       <!-- Service Area -->
       <div class="select-wrap">
-        <select id="serviceAreaFilter" class="filter-select">
+        <select id="serviceAreaFilter" class="filter-select" aria-label="Filter by service area">
           <option value="">All Service Areas</option>
         </select>
-        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </div>
 
       <!-- Knowledge Level -->
       <div class="select-wrap">
-        <select id="knowledgeFilter" class="filter-select">
+        <select id="knowledgeFilter" class="filter-select" aria-label="Filter by knowledge level">
           <option value="">All Knowledge Levels</option>
         </select>
-        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </div>
 
       <!-- Program -->
       <div class="select-wrap">
-        <select id="programFilter" class="filter-select">
+        <select id="programFilter" class="filter-select" aria-label="Filter by program">
           <option value="">All Programs</option>
         </select>
-        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </div>
 
       <!-- Audience -->
       <div class="select-wrap">
-        <select id="audienceFilter" class="filter-select">
+        <select id="audienceFilter" class="filter-select" aria-label="Filter by audience">
           <option value="">All Audiences</option>
         </select>
-        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </div>
 
-      <div class="vdiv"></div>
+      <div class="vdiv" role="separator"></div>
 
       <!-- Institution search -->
       <div class="inst-wrap">
-        <svg class="inst-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="inst-icon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 10v11M12 10v11M16 10v11"/>
         </svg>
-        <input type="text" id="instInput" class="inst-input" placeholder="Filter by institution…" autocomplete="off">
-        <button class="inst-clear" id="instClear" title="Clear institution filter">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <input type="text" id="instInput" class="inst-input" placeholder="Filter by institution…" autocomplete="off"
+               aria-label="Filter by institution" aria-autocomplete="list" aria-controls="instDropdown" aria-expanded="false">
+        <button class="inst-clear" id="instClear" aria-label="Clear institution filter" style="display:none">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
-        <div class="inst-dropdown" id="instDropdown"></div>
+        <div class="inst-dropdown" id="instDropdown" role="listbox" aria-label="Institution suggestions"></div>
       </div>
 
       <button class="clear-all" id="clearAll">Clear all filters</button>
@@ -1099,9 +1144,9 @@
 </div>
 
 <!-- ── Main ── -->
-<main class="main">
+<main class="main" id="main-content">
   <div class="results-bar">
-    <div class="results-count" id="resultsCount">Loading…</div>
+    <div class="results-count" id="resultsCount" aria-live="polite" aria-atomic="true">Loading…</div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="sort-wrap">
         <label for="sortSelect">Sort:</label>
@@ -1115,23 +1160,23 @@
           <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
         </div>
       </div>
-      <div class="view-toggle">
+      <div class="view-toggle" role="group" aria-label="View style">
         <!-- List -->
-        <button class="view-btn active" data-view="list" title="List view">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button class="view-btn active" data-view="list" aria-label="List view" aria-pressed="true">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
         </button>
         <!-- Card -->
-        <button class="view-btn" data-view="card" title="Card view">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button class="view-btn" data-view="card" aria-label="Card view" aria-pressed="false">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </button>
         <!-- Compact -->
-        <button class="view-btn" data-view="compact" title="Compact view">
-          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <button class="view-btn" data-view="compact" aria-label="Compact view" aria-pressed="false">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
             <line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/>
             <line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/>
             <line x1="3" y1="21" x2="21" y2="21"/>
@@ -1296,6 +1341,7 @@ function buildFilters() {
     btn.className = 'pill';
     btn.dataset.value = cat;
     btn.textContent = cat;
+    btn.setAttribute('aria-pressed', 'false');
     btn.addEventListener('click', () => {
       filters.category = cat;
       refreshPills();
@@ -1422,11 +1468,11 @@ function renderCards() {
   }
 
   if (currentView === 'card') {
-    el.innerHTML = `<div class="cards-grid">${filteredData.map(renderCard).join('')}</div>`;
+    el.innerHTML = `<div class="cards-grid" role="list">${filteredData.map(renderCard).join('')}</div>`;
   } else if (currentView === 'compact') {
-    el.innerHTML = `<div class="compact-view">${filteredData.map(renderCompactItem).join('')}</div>`;
+    el.innerHTML = `<div class="compact-view" role="list">${filteredData.map(renderCompactItem).join('')}</div>`;
   } else {
-    el.innerHTML = `<div class="list-view">${filteredData.map(renderListItem).join('')}</div>`;
+    el.innerHTML = `<div class="list-view" role="list">${filteredData.map(renderListItem).join('')}</div>`;
   }
 }
 
@@ -1445,13 +1491,13 @@ function renderListItem(row) {
   const q       = filters.search;
 
   return `
-<div class="list-item">
-  <div class="list-accent" style="background:${colors.bar}"></div>
+<div class="list-item" role="listitem">
+  <div class="list-accent" style="background:${colors.bar}" aria-hidden="true"></div>
   <div class="list-main">
     <div class="list-top">
       <span class="badge" style="background:${colors.bg};color:${colors.text}">${esc(cat)}</span>
       ${sub ? `<span class="badge badge-sub">${esc(sub)}</span>` : ''}
-      <span class="list-title">${q ? highlightMatch(title, q) : esc(title)}</span>
+      <h2 class="list-title">${q ? highlightMatch(title, q) : esc(title)}</h2>
     </div>
     ${inst ? `
     <div class="list-institution">
@@ -1475,9 +1521,9 @@ function renderListItem(row) {
   </div>
   <div class="list-right">
     ${link
-      ? `<a href="${esc(link)}" class="link-btn" target="_blank" rel="noopener noreferrer">
+      ? `<a href="${esc(link)}" class="link-btn" target="_blank" rel="noopener noreferrer" aria-label="View resource: ${esc(title)} (opens in new tab)">
            View resource
-           <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+           <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
            </svg>
@@ -1498,8 +1544,8 @@ function renderCompactItem(row) {
   const q      = filters.search;
 
   return `
-<div class="compact-item">
-  <div class="compact-dot" style="background:${colors.bar}" title="${esc(cat)}"></div>
+<div class="compact-item" role="listitem">
+  <div class="compact-dot" style="background:${colors.bar}" aria-hidden="true"></div>
   <span class="badge" style="background:${colors.bg};color:${colors.text};flex-shrink:0">${esc(cat)}</span>
   <span class="compact-title">${q ? highlightMatch(title, q) : esc(title)}</span>
   ${inst ? `<span class="compact-inst">${q ? highlightMatch(inst, q) : esc(inst)}</span>` : ''}
@@ -1508,8 +1554,8 @@ function renderCompactItem(row) {
     ${kls.slice(0,1).map(k => `<span class="tag">${esc(k)}</span>`).join('')}
   </div>
   ${link
-    ? `<a href="${esc(link)}" class="compact-link" target="_blank" rel="noopener noreferrer">
-         View <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+    ? `<a href="${esc(link)}" class="compact-link" target="_blank" rel="noopener noreferrer" aria-label="View resource: ${esc(title)} (opens in new tab)">
+         View <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
          </svg>
@@ -1536,7 +1582,7 @@ function renderCard(row) {
   const q = filters.search;
 
   return `
-<article class="card">
+<article class="card" role="listitem">
   <div class="card-top-bar" style="background:${colors.bar}"></div>
   <div class="card-body">
 
@@ -1545,7 +1591,7 @@ function renderCard(row) {
       ${sub ? `<span class="badge badge-sub">${esc(sub)}</span>` : ''}
     </div>
 
-    <h3 class="card-title">${q ? highlightMatch(title, q) : esc(title)}</h3>
+    <h2 class="card-title">${q ? highlightMatch(title, q) : esc(title)}</h2>
 
     ${inst ? `
     <div class="card-institution">
@@ -1599,9 +1645,9 @@ function renderCard(row) {
       <span title="${esc(contact)}">${esc(contact || 'No contact listed')}</span>
     </div>
     ${link
-      ? `<a href="${esc(link)}" class="link-btn" target="_blank" rel="noopener noreferrer">
+      ? `<a href="${esc(link)}" class="link-btn" target="_blank" rel="noopener noreferrer" aria-label="View resource: ${esc(title)} (opens in new tab)">
            View resource
-           <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+           <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
            </svg>
@@ -1623,7 +1669,9 @@ function updateResultsCount() {
 
 function refreshPills() {
   document.querySelectorAll('#categoryPills .pill').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.value === filters.category);
+    const isActive = btn.dataset.value === filters.category;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   });
 }
 
@@ -1666,22 +1714,31 @@ const instClearEl  = document.getElementById('instClear');
 let instHighlight  = -1;
 
 function renderInstDropdown(query) {
-  if (!query) { instDropEl.classList.remove('open'); return; }
+  if (!query) {
+    instDropEl.classList.remove('open');
+    instInputEl.setAttribute('aria-expanded', 'false');
+    return;
+  }
 
   const matches = instList.filter(inst =>
     inst.toLowerCase().includes(query.toLowerCase())
   ).slice(0, 12);
 
-  if (!matches.length) { instDropEl.classList.remove('open'); return; }
+  if (!matches.length) {
+    instDropEl.classList.remove('open');
+    instInputEl.setAttribute('aria-expanded', 'false');
+    return;
+  }
 
   instDropEl.innerHTML = matches.map((inst, i) =>
-    `<div class="inst-opt" data-value="${esc(inst)}" data-idx="${i}">
+    `<div class="inst-opt" role="option" data-value="${esc(inst)}" data-idx="${i}">
        ${highlightMatch(inst, query)}
      </div>`
   ).join('');
 
   instHighlight = -1;
   instDropEl.classList.add('open');
+  instInputEl.setAttribute('aria-expanded', 'true');
 }
 
 instInputEl.addEventListener('input', () => {
@@ -1725,6 +1782,7 @@ function selectInstitution(value) {
   instInputEl.value = value;
   filters.institution = value;
   instInputEl.classList.add('has-value');
+  instInputEl.setAttribute('aria-expanded', 'false');
   instClearEl.style.display = 'block';
   instDropEl.classList.remove('open');
   applyFilters();
@@ -1734,6 +1792,7 @@ instClearEl.addEventListener('click', () => {
   instInputEl.value = '';
   filters.institution = '';
   instInputEl.classList.remove('has-value');
+  instInputEl.setAttribute('aria-expanded', 'false');
   instClearEl.style.display = 'none';
   instDropEl.classList.remove('open');
   applyFilters();
@@ -1742,6 +1801,7 @@ instClearEl.addEventListener('click', () => {
 document.addEventListener('click', e => {
   if (!instInputEl.contains(e.target) && !instDropEl.contains(e.target)) {
     instDropEl.classList.remove('open');
+    instInputEl.setAttribute('aria-expanded', 'false');
   }
 });
 
@@ -1791,7 +1851,10 @@ document.querySelector('.view-toggle').addEventListener('click', e => {
   const btn = e.target.closest('.view-btn');
   if (!btn) return;
   currentView = btn.dataset.view;
-  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b === btn));
+  document.querySelectorAll('.view-btn').forEach(b => {
+    b.classList.toggle('active', b === btn);
+    b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+  });
   renderCards();
 });
 
