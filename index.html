@@ -1107,8 +1107,8 @@
         <label for="sortSelect">Sort:</label>
         <div class="select-wrap">
           <select id="sortSelect" class="filter-select">
-            <option value="date-desc">Newest first</option>
             <option value="date-asc">Oldest first</option>
+            <option value="date-desc">Newest first</option>
             <option value="name-asc">Name A–Z</option>
             <option value="name-desc">Name Z–A</option>
           </select>
@@ -1204,7 +1204,7 @@ let allData       = [];
 let filteredData  = [];
 let catColorMap   = {};
 let instList      = [];
-let sortBy        = 'date-desc';
+let sortBy        = 'date-asc';
 let currentView   = 'list';
 
 const filters = {
