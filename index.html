@@ -470,6 +470,121 @@
       white-space: nowrap;
     }
 
+    /* ── View toggle ── */
+    .view-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+    }
+
+    .view-btn {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 28px;
+      border: none;
+      background: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-3);
+      transition: all 0.13s;
+    }
+
+    .view-btn:hover { color: var(--text-2); background: var(--border); }
+    .view-btn.active { background: var(--surface); color: var(--primary); box-shadow: var(--shadow-xs); }
+
+    /* ── List view ── */
+    .list-view { display: flex; flex-direction: column; gap: 1px; }
+
+    .list-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 16px 20px;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+
+    .list-item:hover { box-shadow: var(--shadow-sm); transform: translateX(2px); }
+
+    .list-accent {
+      width: 4px;
+      min-height: 100%;
+      border-radius: 4px;
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+
+    .list-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .list-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .list-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .list-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .list-institution {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12.5px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .list-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .list-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .list-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
     /* ── Cards ── */
     .cards-grid {
       display: grid;
@@ -656,6 +771,84 @@
       font-size: 12px;
       color: var(--text-3);
       font-style: italic;
+    }
+
+    /* ── Compact view ── */
+    .compact-view { display: flex; flex-direction: column; }
+
+    .compact-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 16px;
+      transition: background 0.1s;
+    }
+
+    .compact-item:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .compact-item:last-child { border-bottom: 1px solid var(--border); border-radius: 0 0 var(--radius) var(--radius); }
+    .compact-item:only-child { border-radius: var(--radius); border-bottom: 1px solid var(--border); }
+    .compact-item:hover { background: var(--surface-2); }
+
+    .compact-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .compact-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .compact-inst {
+      font-size: 12px;
+      color: var(--text-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 240px;
+      flex-shrink: 0;
+    }
+
+    .compact-tags {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .compact-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.13s;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .compact-link:hover { background: var(--primary); color: white; }
+
+    .compact-no-link {
+      font-size: 11px;
+      color: var(--text-3);
+      font-style: italic;
+      flex-shrink: 0;
     }
 
     /* ── Empty / Loading / Error ── */
@@ -909,16 +1102,41 @@
 <main class="main">
   <div class="results-bar">
     <div class="results-count" id="resultsCount">Loading…</div>
-    <div class="sort-wrap">
-      <label for="sortSelect">Sort:</label>
-      <div class="select-wrap">
-        <select id="sortSelect" class="filter-select">
-          <option value="date-desc">Newest first</option>
-          <option value="date-asc">Oldest first</option>
-          <option value="name-asc">Name A–Z</option>
-          <option value="name-desc">Name Z–A</option>
-        </select>
-        <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div class="sort-wrap">
+        <label for="sortSelect">Sort:</label>
+        <div class="select-wrap">
+          <select id="sortSelect" class="filter-select">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="name-asc">Name A–Z</option>
+            <option value="name-desc">Name Z–A</option>
+          </select>
+          <svg class="sel-arrow" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+      </div>
+      <div class="view-toggle">
+        <!-- List -->
+        <button class="view-btn active" data-view="list" title="List view">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <!-- Card -->
+        <button class="view-btn" data-view="card" title="Card view">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </button>
+        <!-- Compact -->
+        <button class="view-btn" data-view="compact" title="Compact view">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="3" y1="5" x2="21" y2="5"/><line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="3" y1="13" x2="21" y2="13"/><line x1="3" y1="17" x2="21" y2="17"/>
+            <line x1="3" y1="21" x2="21" y2="21"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -987,6 +1205,7 @@ let filteredData  = [];
 let catColorMap   = {};
 let instList      = [];
 let sortBy        = 'date-desc';
+let currentView   = 'list';
 
 const filters = {
   search:       '',
@@ -1184,7 +1403,7 @@ function applyFilters() {
   updateSelectStyles();
 }
 
-// ── Render cards ─────────────────────────────────────────────────────
+// ── Render (dispatcher) ──────────────────────────────────────────────
 function renderCards() {
   const el = document.getElementById('cardsContainer');
 
@@ -1202,8 +1421,101 @@ function renderCards() {
     return;
   }
 
-  const html = filteredData.map(row => renderCard(row)).join('');
-  el.innerHTML = `<div class="cards-grid">${html}</div>`;
+  if (currentView === 'card') {
+    el.innerHTML = `<div class="cards-grid">${filteredData.map(renderCard).join('')}</div>`;
+  } else if (currentView === 'compact') {
+    el.innerHTML = `<div class="compact-view">${filteredData.map(renderCompactItem).join('')}</div>`;
+  } else {
+    el.innerHTML = `<div class="list-view">${filteredData.map(renderListItem).join('')}</div>`;
+  }
+}
+
+function renderListItem(row) {
+  const cat     = row['Category'] || 'Other';
+  const colors  = catColorMap[cat] || { bg: '#f1f5f9', text: '#64748b', bar: '#94a3b8' };
+  const sub     = row['Subcategory'];
+  const title   = row['Asset Name/Title'];
+  const inst    = row['Institution/Unit where asset is housed'];
+  const desc    = row['Description'];
+  const link    = safeHref(row['Link/Resource']);
+  const contact = row['Contact person for more info'];
+  const sa      = row['Service Area'];
+  const kls     = splitCSV(row['Knowledge Level']);
+  const progs   = splitCSV(row['Program/s']).filter(p => p && p.toLowerCase() !== 'other');
+  const q       = filters.search;
+
+  return `
+<div class="list-item">
+  <div class="list-accent" style="background:${colors.bar}"></div>
+  <div class="list-main">
+    <div class="list-top">
+      <span class="badge" style="background:${colors.bg};color:${colors.text}">${esc(cat)}</span>
+      ${sub ? `<span class="badge badge-sub">${esc(sub)}</span>` : ''}
+      <span class="list-title">${q ? highlightMatch(title, q) : esc(title)}</span>
+    </div>
+    ${inst ? `
+    <div class="list-institution">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10v11M20 10v11M8 10v11M12 10v11M16 10v11"/>
+      </svg>
+      ${q ? highlightMatch(inst, q) : esc(inst)}
+      ${contact ? `<span style="color:var(--text-3)">·</span>
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span style="color:var(--text-3)">${esc(contact)}</span>` : ''}
+    </div>` : ''}
+    ${desc ? `<p class="list-desc">${esc(desc)}</p>` : ''}
+    ${(sa || kls.length || progs.length) ? `
+    <div class="list-tags">
+      ${sa ? `<span class="tag">${esc(sa)}</span>` : ''}
+      ${kls.map(k => `<span class="tag">${esc(k)}</span>`).join('')}
+      ${progs.map(p => `<span class="prog-tag">${esc(p)}</span>`).join('')}
+    </div>` : ''}
+  </div>
+  <div class="list-right">
+    ${link
+      ? `<a href="${esc(link)}" class="link-btn" target="_blank" rel="noopener noreferrer">
+           View resource
+           <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+             <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+           </svg>
+         </a>`
+      : `<span class="no-link">No link</span>`}
+  </div>
+</div>`;
+}
+
+function renderCompactItem(row) {
+  const cat    = row['Category'] || 'Other';
+  const colors = catColorMap[cat] || { bg: '#f1f5f9', text: '#64748b', bar: '#94a3b8' };
+  const title  = row['Asset Name/Title'];
+  const inst   = row['Institution/Unit where asset is housed'];
+  const link   = safeHref(row['Link/Resource']);
+  const sa     = row['Service Area'];
+  const kls    = splitCSV(row['Knowledge Level']);
+  const q      = filters.search;
+
+  return `
+<div class="compact-item">
+  <div class="compact-dot" style="background:${colors.bar}" title="${esc(cat)}"></div>
+  <span class="badge" style="background:${colors.bg};color:${colors.text};flex-shrink:0">${esc(cat)}</span>
+  <span class="compact-title">${q ? highlightMatch(title, q) : esc(title)}</span>
+  ${inst ? `<span class="compact-inst">${q ? highlightMatch(inst, q) : esc(inst)}</span>` : ''}
+  <div class="compact-tags">
+    ${sa ? `<span class="tag">${esc(sa)}</span>` : ''}
+    ${kls.slice(0,1).map(k => `<span class="tag">${esc(k)}</span>`).join('')}
+  </div>
+  ${link
+    ? `<a href="${esc(link)}" class="compact-link" target="_blank" rel="noopener noreferrer">
+         View <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+           <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+         </svg>
+       </a>`
+    : `<span class="compact-no-link">No link</span>`}
+</div>`;
 }
 
 function renderCard(row) {
@@ -1473,6 +1785,15 @@ document.getElementById('sortSelect').addEventListener('change', e => {
 });
 
 document.getElementById('clearAll').addEventListener('click', clearAllFilters);
+
+// ── View toggle ──────────────────────────────────────────────────────
+document.querySelector('.view-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('.view-btn');
+  if (!btn) return;
+  currentView = btn.dataset.view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderCards();
+});
 
 // ── Boot ─────────────────────────────────────────────────────────────
 loadData();
