@@ -950,6 +950,29 @@
       margin: 0 auto;
     }
 
+    /* ── Expandable descriptions ── */
+    .desc-wrap.expanded .card-description,
+    .desc-wrap.expanded .list-desc {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+    }
+
+    .read-more-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 0 0;
+      font-family: inherit;
+      display: block;
+      text-align: left;
+    }
+
+    .read-more-btn:hover { text-decoration: underline; }
+
     /* ── Accessibility ── */
     .sr-only {
       position: absolute;
@@ -1444,6 +1467,7 @@ function applyFilters() {
   renderCards();
   updateResultsCount();
   updateSelectStyles();
+  requestAnimationFrame(checkDescriptionOverflow);
 }
 
 // ── Render (dispatcher) ──────────────────────────────────────────────
@@ -1508,7 +1532,7 @@ function renderListItem(row) {
       </svg>
       <span style="color:var(--text-3)">${esc(contact)}</span>` : ''}
     </div>` : ''}
-    ${desc ? `<p class="list-desc">${esc(desc)}</p>` : ''}
+    ${desc ? `<div class="desc-wrap"><p class="list-desc">${esc(desc)}</p><button class="read-more-btn" aria-expanded="false">Read more</button></div>` : ''}
     ${(sa || kls.length || progs.length) ? `
     <div class="list-tags">
       ${sa ? `<span class="tag">${esc(sa)}</span>` : ''}
@@ -1598,7 +1622,7 @@ function renderCard(row) {
       <span>${q ? highlightMatch(inst, q) : esc(inst)}</span>
     </div>` : ''}
 
-    ${desc ? `<p class="card-description">${esc(desc)}</p>` : ''}
+    ${desc ? `<div class="desc-wrap"><p class="card-description">${esc(desc)}</p><button class="read-more-btn" aria-expanded="false">Read more</button></div>` : ''}
 
     ${(sa || kls.length) ? `
     <div class="card-tags">
@@ -1842,6 +1866,26 @@ document.getElementById('sortSelect').addEventListener('change', e => {
 });
 
 document.getElementById('clearAll').addEventListener('click', clearAllFilters);
+
+// ── Expandable descriptions ──────────────────────────────────────────
+document.getElementById('cardsContainer').addEventListener('click', e => {
+  const btn = e.target.closest('.read-more-btn');
+  if (!btn) return;
+  const wrap = btn.closest('.desc-wrap');
+  const expanded = wrap.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Show less' : 'Read more';
+  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+});
+
+function checkDescriptionOverflow() {
+  document.querySelectorAll('.desc-wrap').forEach(wrap => {
+    const text = wrap.querySelector('.card-description, .list-desc');
+    const btn = wrap.querySelector('.read-more-btn');
+    if (text && btn) {
+      btn.style.display = text.scrollHeight <= text.clientHeight + 2 ? 'none' : 'block';
+    }
+  });
+}
 
 // ── View toggle ──────────────────────────────────────────────────────
 document.querySelector('.view-toggle').addEventListener('click', e => {
