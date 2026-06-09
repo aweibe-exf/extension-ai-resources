@@ -556,6 +556,33 @@
   </div>
 </div>
 
+<!-- ── Assign resource modal ── -->
+<div class="modal-overlay" id="assignModal" role="dialog" aria-modal="true" aria-labelledby="assignTitle">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 id="assignTitle">Assign Resource</h2>
+      <button class="modal-close" id="assignModalClose" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:14px;line-height:1.5">
+        Select the user who submitted this resource:
+      </p>
+      <select id="assignUserSelect"
+              style="width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid var(--border);
+                     border-radius:8px;font-size:14px;background:#fff;font-family:inherit">
+        <option value="">— Choose a user —</option>
+      </select>
+      <p id="assignError" style="display:none;color:var(--error);font-size:13px;margin-top:10px"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-approve" id="confirmAssign">Assign</button>
+      <button class="btn-cancel-modal" id="cancelAssign">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
@@ -907,15 +934,73 @@ async function deleteResource(id) {
   else { loadResources(); loadPending(); refreshStats(); }
 }
 
-async function assignResource(id) {
-  const email = prompt('Enter the email address of the user to assign this resource to:');
-  if (!email) return;
-  const { data: profile, error } = await sb.from('profiles').select('id').eq('email', email).single();
-  if (error || !profile) { alert('User not found: ' + email); return; }
-  const { error: updErr } = await sb.from('resources').update({ submitted_by: profile.id }).eq('id', id);
-  if (updErr) alert('Error assigning: ' + updErr.message);
-  else { alert('Resource assigned to ' + email); loadResources(); }
+// ── Assign modal ──────────────────────────────────────────────────────
+let assignTargetId = null;
+
+function closeAssignModal() {
+  document.getElementById('assignModal').classList.remove('open');
+  assignTargetId = null;
 }
+
+document.getElementById('assignModalClose').addEventListener('click', closeAssignModal);
+document.getElementById('cancelAssign').addEventListener('click', closeAssignModal);
+document.getElementById('assignModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('assignModal')) closeAssignModal();
+});
+
+async function assignResource(id) {
+  assignTargetId = id;
+
+  // Populate the select with current users
+  const sel = document.getElementById('assignUserSelect');
+  sel.innerHTML = '<option value="">— Choose a user —</option>';
+  document.getElementById('assignError').style.display = 'none';
+
+  const { data: users } = await sb
+    .from('profiles')
+    .select('id, email, full_name')
+    .order('email', { ascending: true });
+
+  (users || []).forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = u.full_name ? `${u.full_name} (${u.email})` : u.email;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('assignModal').classList.add('open');
+}
+
+document.getElementById('confirmAssign').addEventListener('click', async () => {
+  const sel    = document.getElementById('assignUserSelect');
+  const userId = sel.value;
+  const errEl  = document.getElementById('assignError');
+  const btn    = document.getElementById('confirmAssign');
+
+  if (!userId) {
+    errEl.textContent = 'Please select a user.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Assigning…';
+
+  const { error } = await sb.from('resources')
+    .update({ submitted_by: userId })
+    .eq('id', assignTargetId);
+
+  btn.disabled = false;
+  btn.textContent = 'Assign';
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+  } else {
+    closeAssignModal();
+    loadResources();
+  }
+})
 
 // ── Users ──────────────────────────────────────────────────────────────
 let userFilter = '';
