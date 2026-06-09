@@ -1055,8 +1055,11 @@ function renderUsersTable() {
         </select>
       </td>
       <td>${formatDate(u.created_at)}</td>
-      <td>
-        <button class="btn-sm" onclick="sendReset('${esc(u.email)}')">Send reset link</button>
+      <td style="white-space:nowrap">
+        <button class="btn-sm" onclick="sendReset('${esc(u.email)}')">Send reset</button>
+        ${u.id !== currentUser?.id
+          ? `<button class="btn-sm" onclick="deleteUser('${u.id}','${esc(u.email)}')" style="color:var(--error);border-color:#fecaca;margin-left:4px">Delete</button>`
+          : '<span style="font-size:11px;color:var(--text-3);margin-left:6px">(you)</span>'}
       </td>
     </tr>`).join('')}
   </tbody>
@@ -1074,9 +1077,36 @@ async function changeRole(userId, newRole) {
 }
 
 async function sendReset(email) {
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth.html#reset` });
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://aweibe-exf.github.io/extension-ai-resources/auth.html'
+  });
   if (error) alert('Error: ' + error.message);
   else alert(`Password reset link sent to ${email}`);
+}
+
+async function deleteUser(userId, email) {
+  if (!confirm(`Permanently delete ${email}?\n\nThis removes their account and cannot be undone. Their submitted resources will remain but become unattributed.`)) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  const res = await fetch(
+    'https://afncxrdjgktpphojkzcj.supabase.co/functions/v1/delete-user',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey':        'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ',
+      },
+      body: JSON.stringify({ userId }),
+    }
+  );
+  const json = await res.json();
+  if (!res.ok || json.error) {
+    alert('Error: ' + (json.error || 'Unknown error'));
+  } else {
+    loadUsers();
+    refreshStats();
+  }
 }
 </script>
 </body>

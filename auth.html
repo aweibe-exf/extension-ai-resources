@@ -538,7 +538,7 @@ document.getElementById('forgotForm').addEventListener('submit', async e => {
 
   setLoading(btn, true);
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth.html#reset`
+    redirectTo: 'https://aweibe-exf.github.io/extension-ai-resources/auth.html'
   });
   setLoading(btn, false);
 
