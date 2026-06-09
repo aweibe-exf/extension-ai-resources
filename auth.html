@@ -597,28 +597,37 @@ document.getElementById('setPasswordForm').addEventListener('submit', async e =>
   const pass    = document.getElementById('setpw-password').value;
   const confirm = document.getElementById('setpw-confirm').value;
 
-  if (pass.length < 8) {
-    errEl.textContent = 'Password must be at least 8 characters.';
-    return;
+  function showSetPwError(msg) {
+    errEl.textContent = msg;
+    errEl.classList.add('show');
   }
-  if (pass !== confirm) {
-    errEl.textContent = 'Passwords do not match.';
-    return;
-  }
+
+  if (pass.length < 8) { showSetPwError('Password must be at least 8 characters.'); return; }
+  if (pass !== confirm) { showSetPwError('Passwords do not match.'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
+  // Ensure Supabase has processed the token from the URL before calling updateUser
+  const { data: { session }, error: sessErr } = await sb.auth.getSession();
+  if (sessErr || !session) {
+    showSetPwError('Your invitation link may have expired. Please request a new invite.');
+    btn.disabled = false;
+    btn.textContent = 'Set password & sign in';
+    return;
+  }
+
   const { error } = await sb.auth.updateUser({ password: pass });
 
   if (error) {
-    errEl.textContent = error.message;
+    showSetPwError(error.message);
     btn.disabled = false;
     btn.textContent = 'Set password & sign in';
     return;
   }
 
   okEl.textContent = '✓ Password set! Taking you to the directory…';
+  okEl.classList.add('show');
   setTimeout(() => { window.location.href = 'index.html'; }, 1200);
 });
 </script>

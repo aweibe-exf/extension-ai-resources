@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     const { data: linkData, error: linkErr } = await adminClient.auth.admin.generateLink({
       type: 'invite',
       email,
-      options: { redirectTo: `${SITE_URL}/auth.html#set-password` },
+      options: { redirectTo: `${SITE_URL}/auth.html` },
     });
     if (linkErr) {
       return new Response(JSON.stringify({ error: linkErr.message }), {
