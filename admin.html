@@ -597,7 +597,7 @@ async function refreshStats() {
 async function loadPending() {
   const { data, error } = await sb
     .from('resources')
-    .select('id, title, category, subcategory, description, link, institution, contact_person, notes, created_at, submitted_by, profiles!submitted_by(email, full_name)')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, notes, created_at, submitted_by')
     .eq('status', 'pending')
     .order('created_at', { ascending: true });
 
@@ -611,17 +611,26 @@ async function loadPending() {
     return;
   }
 
-  el.innerHTML = `<div class="resource-queue">${data.map(renderQueueCard).join('')}</div>`;
+  // Fetch submitter profiles separately
+  const submitterIds = [...new Set(data.map(r => r.submitted_by).filter(Boolean))];
+  const profileMap = {};
+  if (submitterIds.length) {
+    const { data: profiles } = await sb.from('profiles').select('id, email, full_name').in('id', submitterIds);
+    (profiles || []).forEach(p => { profileMap[p.id] = p; });
+  }
+
+  el.innerHTML = `<div class="resource-queue">${data.map(r => renderQueueCard(r, profileMap)).join('')}</div>`;
   refreshStats();
 }
 
-function submitterInfo(row) {
-  const p = row.profiles;
-  if (!p) return 'Unknown submitter';
-  return p.full_name ? `${p.full_name} &lt;${esc(p.email)}&gt;` : esc(p.email);
+function submitterInfo(row, profileMap) {
+  if (!row.submitted_by) return '<em style="color:var(--text-3)">Legacy record</em>';
+  const p = profileMap?.[row.submitted_by];
+  if (!p) return `<span style="color:var(--text-3)">${esc(row.submitted_by.slice(0,8))}…</span>`;
+  return p.full_name ? `${esc(p.full_name)} &lt;${esc(p.email)}&gt;` : esc(p.email);
 }
 
-function renderQueueCard(row) {
+function renderQueueCard(row, profileMap) {
   return `
 <div class="queue-card" id="qcard-${row.id}">
   <div class="queue-card-header">
@@ -634,7 +643,7 @@ function renderQueueCard(row) {
         <span class="dot">·</span>
         <span>Submitted ${formatDate(row.created_at)}</span>
         <span class="dot">·</span>
-        <span>By ${submitterInfo(row)}</span>
+        <span>By ${submitterInfo(row, profileMap)}</span>
       </div>
     </div>
   </div>
@@ -742,11 +751,28 @@ document.getElementById('confirmReject').addEventListener('click', async () => {
 let resourceFilter = { search: '', status: '' };
 
 async function loadResources() {
-  let q = sb.from('resources').select('id, title, category, status, institution, created_at, submitted_by, profiles!submitted_by(email, full_name)').order('created_at', { ascending: false });
+  const { data, error } = await sb
+    .from('resources')
+    .select('id, title, category, status, institution, created_at, submitted_by')
+    .order('created_at', { ascending: false });
 
-  const { data, error } = await q;
   if (error) { document.getElementById('resourcesTableContent').innerHTML = `<p style="padding:24px;color:var(--error)">${esc(error.message)}</p>`; return; }
-  allResources = data || [];
+
+  const rows = data || [];
+
+  // Fetch submitter profiles separately
+  const submitterIds = [...new Set(rows.map(r => r.submitted_by).filter(Boolean))];
+  const profileMap = {};
+  if (submitterIds.length) {
+    const { data: profiles } = await sb.from('profiles').select('id, email, full_name').in('id', submitterIds);
+    (profiles || []).forEach(p => { profileMap[p.id] = p; });
+  }
+
+  // Attach submitter info as a flat property for renderResourcesTable to use
+  allResources = rows.map(r => ({
+    ...r,
+    _submitter: profileMap[r.submitted_by] || null,
+  }));
   renderResourcesTable();
 }
 
@@ -793,8 +819,8 @@ function renderResourcesTable() {
   </thead>
   <tbody>
     ${rows.map(row => {
-      const p = row.profiles;
-      const submitter = p ? (p.full_name || p.email) : '(legacy)';
+      const p = row._submitter;
+      const submitter = p ? (p.full_name || p.email) : (row.submitted_by ? row.submitted_by.slice(0,8)+'…' : '(legacy)');
       return `
       <tr>
         <td class="td-title">${esc(row.title)}</td>
