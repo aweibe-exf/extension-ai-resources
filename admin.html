@@ -302,15 +302,15 @@
     /* ── Rejection modal ── */
     .modal-overlay {
       display: none;
+      pointer-events: none;
       position: fixed; inset: 0; z-index: 300;
       background: rgba(0,0,0,0.45);
       backdrop-filter: blur(4px);
-      display: none;
       place-items: center;
       padding: 24px;
     }
 
-    .modal-overlay.open { display: grid; }
+    .modal-overlay.open { display: grid; pointer-events: auto; }
 
     .modal {
       background: var(--surface);
