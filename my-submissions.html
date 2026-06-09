@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Submissions — Cooperative Extension AI Assets</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-bg: #eff6ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --radius-lg: 14px;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.06);
+      --shadow: 0 4px 16px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.03);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-xs);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: inherit; flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: var(--radius-sm);
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+
+    .brand-text { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+
+    .header-nav { display: flex; align-items: center; gap: 8px; }
+
+    .nav-link {
+      font-size: 13px; color: var(--text-3); text-decoration: none;
+      padding: 6px 12px; border-radius: 50px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-link:hover { color: var(--primary); background: var(--primary-bg); }
+
+    .btn-signout {
+      font-size: 13px; color: var(--text-3); background: none; border: none;
+      cursor: pointer; font-family: inherit; padding: 6px 12px;
+      border-radius: 50px; transition: color 0.15s, background 0.15s;
+    }
+
+    .btn-signout:hover { color: var(--error); background: var(--error-bg); }
+
+    /* ── Page ── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .page-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      gap: 16px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+
+    .page-header h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.02em;
+    }
+
+    .btn-add-new {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 20px;
+      background: var(--primary); color: white;
+      border-radius: 50px; font-size: 13.5px; font-weight: 600;
+      text-decoration: none; transition: all 0.15s; white-space: nowrap;
+    }
+
+    .btn-add-new:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+      transform: translateY(-1px);
+    }
+
+    /* ── Status badge ── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 50px;
+      font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    }
+
+    .status-pending  { background: var(--warning-bg); color: var(--warning); border: 1px solid #fde68a; }
+    .status-approved { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+    .status-rejected { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+
+    /* ── Submission cards ── */
+    .submissions-list { display: flex; flex-direction: column; gap: 16px; }
+
+    .sub-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sub-card-header {
+      padding: 18px 24px;
+      display: flex; align-items: flex-start; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sub-card-header-main { flex: 1; min-width: 0; }
+
+    .sub-title {
+      font-size: 16px; font-weight: 600; color: var(--text);
+      letter-spacing: -0.01em; margin-bottom: 4px;
+    }
+
+    .sub-meta {
+      font-size: 12.5px; color: var(--text-3);
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+
+    .sub-meta .dot { color: var(--border); }
+
+    .sub-card-body {
+      padding: 16px 24px;
+    }
+
+    .sub-desc {
+      font-size: 13px; color: var(--text-2); line-height: 1.65;
+      margin-bottom: 12px;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .rejection-reason {
+      background: var(--error-bg);
+      border: 1px solid #fecaca;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px; color: var(--error);
+      margin-bottom: 12px; line-height: 1.55;
+    }
+
+    .rejection-reason strong { display: block; margin-bottom: 3px; }
+
+    .sub-card-footer {
+      padding: 12px 24px;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .btn-edit {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 16px;
+      background: var(--primary); color: white;
+      border-radius: 50px; font-size: 12.5px; font-weight: 600;
+      text-decoration: none; border: none; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+
+    .btn-edit:hover { background: var(--primary-dark); }
+
+    .btn-delete {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      background: transparent; color: var(--error);
+      border-radius: 50px; font-size: 12.5px; font-weight: 500;
+      border: 1.5px solid #fecaca; cursor: pointer;
+      font-family: inherit; transition: all 0.15s;
+    }
+
+    .btn-delete:hover { background: var(--error-bg); border-color: var(--error); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 80px 32px;
+      text-align: center;
+    }
+
+    .empty-state h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .empty-state p  { font-size: 14px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; }
+
+    /* ── Edit modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      overflow-y: auto;
+      padding: 40px 24px;
+    }
+
+    .modal-overlay.open { display: block; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      max-width: 680px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .modal-header h2 { font-size: 18px; font-weight: 600; }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); padding: 4px; border-radius: 4px;
+      transition: color 0.15s;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 28px; }
+
+    .modal-field { margin-bottom: 18px; }
+    .modal-field label { display:block; font-size:13px; font-weight:500; color:var(--text-2); margin-bottom:6px; }
+
+    .modal-field input[type="text"],
+    .modal-field input[type="url"],
+    .modal-field select,
+    .modal-field textarea {
+      width: 100%;
+      padding: 9px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px; font-family: inherit; color: var(--text);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus,
+    .modal-field textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    .modal-field textarea { min-height: 90px; resize: vertical; line-height: 1.65; }
+
+    .modal-field select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' fill='none' stroke='%2364748b' stroke-width='2.5' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .modal-footer {
+      padding: 20px 28px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .modal-save {
+      padding: 10px 24px;
+      background: var(--primary); color: white; border: none;
+      border-radius: 50px; font-size: 13.5px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all 0.15s;
+    }
+
+    .modal-save:hover { background: var(--primary-dark); }
+    .modal-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .modal-cancel {
+      padding: 10px 18px;
+      background: transparent; color: var(--text-2);
+      border: 1.5px solid var(--border); border-radius: 50px;
+      font-size: 13.5px; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all 0.15s;
+    }
+
+    .modal-cancel:hover { border-color: var(--text-3); color: var(--text); }
+
+    .alert {
+      display: none; padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 13px; line-height: 1.5; margin-bottom: 16px;
+    }
+
+    .alert.show { display: block; }
+    .alert-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+    .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    /* Spinner */
+    .spinner-wrap { text-align: center; padding: 60px 24px; color: var(--text-3); font-size: 14px; }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.75s linear infinite; margin: 0 auto 14px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <span class="brand-text">Cooperative Extension AI Assets</span>
+    </a>
+    <nav class="header-nav" aria-label="Site navigation">
+      <a href="index.html" class="nav-link">← Directory</a>
+      <a href="submit.html" class="nav-link">Submit a Resource</a>
+      <button class="btn-signout" id="signOutBtn">Sign out</button>
+    </nav>
+  </div>
+</header>
+
+<main class="page-wrap" id="main-content">
+  <div class="page-header">
+    <h1>My Submissions</h1>
+    <a href="submit.html" class="btn-add-new">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      New submission
+    </a>
+  </div>
+
+  <div id="content">
+    <div class="spinner-wrap">
+      <div class="spinner" aria-hidden="true"></div>
+      Loading your submissions…
+    </div>
+  </div>
+</main>
+
+<!-- ── Edit modal ── -->
+<div class="modal-overlay" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Edit Submission</h2>
+      <button class="modal-close" id="modalClose" aria-label="Close modal">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-error" id="modal-error" role="alert"></div>
+      <input type="hidden" id="edit-id">
+
+      <div class="modal-field">
+        <label for="edit-title">Title <span style="color:#dc2626">*</span></label>
+        <input type="text" id="edit-title" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="modal-field">
+          <label for="edit-category">Category <span style="color:#dc2626">*</span></label>
+          <select id="edit-category">
+            <option>AI Tools &amp; Platforms</option>
+            <option>Training &amp; Education</option>
+            <option>Policy &amp; Governance</option>
+            <option>Research &amp; Publications</option>
+            <option>Templates &amp; Prompts</option>
+            <option>Case Studies</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label for="edit-subcategory">Subcategory</label>
+          <input type="text" id="edit-subcategory">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label for="edit-description">Description</label>
+        <textarea id="edit-description"></textarea>
+      </div>
+      <div class="modal-field">
+        <label for="edit-link">Link / URL</label>
+        <input type="url" id="edit-link" placeholder="https://">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="modal-field">
+          <label for="edit-institution">Institution</label>
+          <input type="text" id="edit-institution">
+        </div>
+        <div class="modal-field">
+          <label for="edit-contact">Contact person</label>
+          <input type="text" id="edit-contact">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label for="edit-notes">Notes</label>
+        <input type="text" id="edit-notes">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-save" id="modalSave">Save changes</button>
+      <button class="modal-cancel" id="modalCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let editingId   = null;
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function statusBadge(status) {
+  const labels = { pending: '⏳ Pending review', approved: '✓ Approved', rejected: '✗ Not approved' };
+  return `<span class="status-badge status-${status}">${labels[status] || status}</span>`;
+}
+
+// ── Auth guard ────────────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = 'auth.html?next=my-submissions.html';
+    return;
+  }
+  currentUser = session.user;
+  loadSubmissions();
+}
+
+init();
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// ── Load submissions ──────────────────────────────────────────────────
+async function loadSubmissions() {
+  const { data, error } = await sb
+    .from('resources')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, notes, status, rejection_reason, created_at, updated_at')
+    .eq('submitted_by', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  const el = document.getElementById('content');
+
+  if (error) {
+    el.innerHTML = `<p style="color:var(--error);padding:24px">Error loading submissions: ${esc(error.message)}</p>`;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8M8 12h8"/>
+        </svg>
+        <h3>No submissions yet</h3>
+        <p>You haven't submitted any resources to the directory.<br>Share something useful with the Extension community!</p>
+        <a href="submit.html" class="btn-add-new">Submit your first resource</a>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="submissions-list" role="list">
+      ${data.map(renderSubmission).join('')}
+    </div>`;
+}
+
+function renderSubmission(row) {
+  const isPending = row.status === 'pending';
+  const isRejected = row.status === 'rejected';
+
+  return `
+<article class="sub-card" role="listitem">
+  <div class="sub-card-header">
+    <div class="sub-card-header-main">
+      <div class="sub-title">${esc(row.title)}</div>
+      <div class="sub-meta">
+        <span>${esc(row.category || 'Uncategorized')}</span>
+        ${row.institution ? `<span class="dot">·</span><span>${esc(row.institution)}</span>` : ''}
+        <span class="dot">·</span>
+        <span>Submitted ${formatDate(row.created_at)}</span>
+      </div>
+    </div>
+    ${statusBadge(row.status)}
+  </div>
+  <div class="sub-card-body">
+    ${row.description ? `<p class="sub-desc">${esc(row.description)}</p>` : ''}
+    ${isRejected && row.rejection_reason ? `
+      <div class="rejection-reason">
+        <strong>Reason for rejection:</strong>
+        ${esc(row.rejection_reason)}
+      </div>` : ''}
+  </div>
+  <div class="sub-card-footer">
+    ${isPending || isRejected ? `
+      <button class="btn-edit" data-id="${row.id}" onclick="openEdit('${row.id}')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit
+      </button>
+      <button class="btn-delete" data-id="${row.id}" onclick="deleteSubmission('${row.id}', this)">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+        Delete
+      </button>` : ''}
+    ${row.link ? `<a href="${esc(row.link)}" target="_blank" rel="noopener noreferrer"
+        style="font-size:12.5px;color:var(--primary);text-decoration:none;margin-left:auto"
+        aria-label="View resource (opens in new tab)">View resource →</a>` : ''}
+  </div>
+</article>`;
+}
+
+// ── Delete ────────────────────────────────────────────────────────────
+async function deleteSubmission(id, btn) {
+  if (!confirm('Delete this submission? This cannot be undone.')) return;
+  btn.disabled = true;
+  const { error } = await sb.from('resources').delete().eq('id', id).eq('submitted_by', currentUser.id);
+  if (error) {
+    alert('Error deleting: ' + error.message);
+    btn.disabled = false;
+  } else {
+    loadSubmissions();
+  }
+}
+
+// ── Edit modal ────────────────────────────────────────────────────────
+let allData = [];
+
+async function openEdit(id) {
+  // Fetch fresh data for this record
+  const { data, error } = await sb.from('resources').select('*').eq('id', id).single();
+  if (error || !data) { alert('Could not load resource data.'); return; }
+
+  editingId = id;
+  document.getElementById('edit-id').value          = id;
+  document.getElementById('edit-title').value        = data.title || '';
+  document.getElementById('edit-category').value     = data.category || '';
+  document.getElementById('edit-subcategory').value  = data.subcategory || '';
+  document.getElementById('edit-description').value  = data.description || '';
+  document.getElementById('edit-link').value         = data.link || '';
+  document.getElementById('edit-institution').value  = data.institution || '';
+  document.getElementById('edit-contact').value      = data.contact_person || '';
+  document.getElementById('edit-notes').value        = data.notes || '';
+
+  document.getElementById('modal-error').classList.remove('show');
+  document.getElementById('editModal').classList.add('open');
+  document.getElementById('edit-title').focus();
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+  editingId = null;
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+document.getElementById('editModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('editModal')) closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('modalSave').addEventListener('click', async () => {
+  const errorEl = document.getElementById('modal-error');
+  errorEl.classList.remove('show');
+
+  const title = document.getElementById('edit-title').value.trim();
+  const cat   = document.getElementById('edit-category').value;
+
+  if (!title) { errorEl.textContent = 'Title is required.'; errorEl.classList.add('show'); return; }
+
+  const btn = document.getElementById('modalSave');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const updates = {
+    title,
+    category:       cat,
+    subcategory:    document.getElementById('edit-subcategory').value.trim()  || null,
+    description:    document.getElementById('edit-description').value.trim()  || null,
+    link:           document.getElementById('edit-link').value.trim()         || null,
+    institution:    document.getElementById('edit-institution').value.trim()  || null,
+    contact_person: document.getElementById('edit-contact').value.trim()      || null,
+    notes:          document.getElementById('edit-notes').value.trim()        || null,
+    status:         'pending',  // re-queue for review on edit
+  };
+
+  const { error } = await sb
+    .from('resources')
+    .update(updates)
+    .eq('id', editingId)
+    .eq('submitted_by', currentUser.id);
+
+  btn.disabled = false;
+  btn.textContent = 'Save changes';
+
+  if (error) {
+    errorEl.textContent = 'Error saving: ' + error.message;
+    errorEl.classList.add('show');
+  } else {
+    closeModal();
+    loadSubmissions();
+  }
+});
+</script>
+</body>
+</html>

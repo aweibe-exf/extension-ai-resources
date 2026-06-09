@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Cooperative Extension AI Assets</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-bg: #eff6ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --radius-lg: 14px;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.06);
+      --shadow: 0 4px 16px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.03);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-xs);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: inherit; flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: var(--radius-sm);
+      display: grid; place-items: center;
+    }
+
+    .brand-text { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+
+    .admin-badge {
+      background: #fef3c7; color: #92400e; border: 1px solid #fde68a;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.06em; padding: 2px 8px; border-radius: 50px;
+    }
+
+    .header-nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+
+    .nav-tab {
+      padding: 7px 14px;
+      background: none; border: none; cursor: pointer;
+      font-family: inherit; font-size: 13px; font-weight: 500;
+      color: var(--text-3); border-radius: 50px;
+      transition: all 0.13s; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .nav-tab:hover { color: var(--primary); background: var(--primary-bg); }
+    .nav-tab.active { color: var(--primary); background: var(--primary-bg); font-weight: 600; }
+
+    .nav-badge {
+      background: var(--error); color: white;
+      font-size: 10px; font-weight: 700;
+      min-width: 18px; height: 18px; border-radius: 50px;
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 0 5px;
+    }
+
+    .btn-signout {
+      font-size: 13px; color: var(--text-3); background: none; border: none;
+      cursor: pointer; font-family: inherit; padding: 7px 14px;
+      border-radius: 50px; transition: color 0.15s, background 0.15s;
+    }
+
+    .btn-signout:hover { color: var(--error); background: var(--error-bg); }
+
+    /* ── Page ── */
+    .page-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    /* ── Tabs ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Stats row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 700px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .stat-card-num { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+    .stat-card-label { font-size: 12px; color: var(--text-3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* ── Resource list (pending) ── */
+    .resource-queue { display: flex; flex-direction: column; gap: 16px; }
+
+    .queue-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .queue-card-header {
+      padding: 16px 22px;
+      display: flex; align-items: flex-start; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .queue-card-main { flex: 1; min-width: 0; }
+
+    .queue-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.01em; }
+
+    .queue-meta {
+      font-size: 12.5px; color: var(--text-3);
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    }
+
+    .queue-meta .dot { color: var(--border); }
+
+    .queue-card-body { padding: 14px 22px; }
+
+    .queue-desc {
+      font-size: 13px; color: var(--text-2); line-height: 1.65;
+      margin-bottom: 10px;
+    }
+
+    .queue-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12.5px; color: var(--primary); text-decoration: none;
+    }
+
+    .queue-link:hover { text-decoration: underline; }
+
+    .queue-card-footer {
+      padding: 12px 22px;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+
+    .btn-approve {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 16px;
+      background: var(--success); color: white;
+      border: none; border-radius: 50px;
+      font-size: 12.5px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: all 0.15s;
+    }
+
+    .btn-approve:hover { filter: brightness(0.9); }
+    .btn-approve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-reject {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      background: transparent; color: var(--error);
+      border: 1.5px solid #fecaca; border-radius: 50px;
+      font-size: 12.5px; font-weight: 500; font-family: inherit;
+      cursor: pointer; transition: all 0.15s;
+    }
+
+    .btn-reject:hover { background: var(--error-bg); border-color: var(--error); }
+    .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-sm {
+      padding: 6px 12px; font-size: 12px; font-weight: 500;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      background: var(--surface); color: var(--text-2);
+      cursor: pointer; font-family: inherit; transition: all 0.13s;
+    }
+
+    .btn-sm:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── All resources table ── */
+    .resources-table {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+
+    .table-search {
+      flex: 1; max-width: 320px;
+      padding: 8px 14px 8px 36px;
+      border: 1.5px solid var(--border);
+      border-radius: 50px; font-size: 13.5px; font-family: inherit;
+      color: var(--text); outline: none;
+      transition: border-color 0.15s;
+      background: var(--surface-2) url("data:image/svg+xml,%3Csvg width='14' height='14' fill='none' stroke='%2364748b' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;
+    }
+
+    .table-search:focus { border-color: var(--primary); background-color: var(--surface); }
+
+    .status-filter {
+      padding: 8px 12px; font-size: 13px; font-family: inherit;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      color: var(--text-2); background: var(--surface);
+      cursor: pointer; outline: none;
+    }
+
+    table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left; padding: 10px 14px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3);
+      background: var(--surface-2); border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      vertical-align: top; color: var(--text-2);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-2); }
+
+    .td-title { color: var(--text); font-weight: 500; }
+    .td-link { color: var(--primary); text-decoration: none; }
+    .td-link:hover { text-decoration: underline; }
+
+    /* ── Status badge ── */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 2px 9px; border-radius: 50px;
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+    }
+
+    .status-pending  { background: var(--warning-bg); color: var(--warning); border: 1px solid #fde68a; }
+    .status-approved { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+    .status-rejected { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+
+    /* ── Users table ── */
+    .role-select {
+      padding: 5px 10px;
+      font-size: 12.5px; font-family: inherit;
+      border: 1.5px solid var(--border); border-radius: 50px;
+      background: var(--surface); color: var(--text-2); cursor: pointer;
+    }
+
+    /* ── Rejection modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      display: none;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open { display: grid; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      width: 100%; max-width: 480px;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .modal-header h2 { font-size: 17px; font-weight: 600; }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); padding: 4px; border-radius: 4px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-body { padding: 24px; }
+
+    .modal-body label { display:block; font-size:13px; font-weight:500; color:var(--text-2); margin-bottom:6px; }
+
+    .modal-body textarea {
+      width: 100%; padding: 9px 13px;
+      border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 13.5px; font-family: inherit; color: var(--text);
+      outline: none; resize: vertical; min-height: 90px;
+      transition: border-color 0.15s;
+    }
+
+    .modal-body textarea:focus { border-color: var(--primary); }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background: var(--surface-2);
+      display: flex; gap: 8px;
+    }
+
+    .btn-confirm-reject {
+      padding: 9px 20px;
+      background: var(--error); color: white; border: none;
+      border-radius: 50px; font-size: 13.5px; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+    }
+
+    .btn-confirm-reject:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-cancel-modal {
+      padding: 9px 16px;
+      background: transparent; color: var(--text-2);
+      border: 1.5px solid var(--border); border-radius: 50px;
+      font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer;
+    }
+
+    /* Spinner / empty */
+    .spinner-wrap { text-align: center; padding: 60px 24px; color: var(--text-3); font-size: 14px; }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.75s linear infinite; margin: 0 auto 14px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty { text-align: center; padding: 60px 24px; color: var(--text-3); font-size: 14px; }
+
+    .alert {
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 13px; line-height: 1.5; margin-bottom: 16px;
+    }
+
+    .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <span class="brand-text">AI Assets</span>
+    </a>
+    <span class="admin-badge">Admin</span>
+
+    <nav class="header-nav" aria-label="Admin sections">
+      <button class="nav-tab active" data-panel="pending" id="tab-pending">
+        Pending
+        <span class="nav-badge" id="pendingCount" aria-label="pending items">0</span>
+      </button>
+      <button class="nav-tab" data-panel="resources" id="tab-resources">All Resources</button>
+      <button class="nav-tab" data-panel="users" id="tab-users">Users</button>
+    </nav>
+
+    <button class="btn-signout" id="signOutBtn" style="margin-left:8px">Sign out</button>
+  </div>
+</header>
+
+<main class="page-wrap" id="main-content">
+
+  <!-- Stats row (always visible) -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-card-num" id="s-total">—</div>
+      <div class="stat-card-label">Total Resources</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" id="s-approved">—</div>
+      <div class="stat-card-label">Approved</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" id="s-pending">—</div>
+      <div class="stat-card-label">Pending Review</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-num" id="s-users">—</div>
+      <div class="stat-card-label">Registered Users</div>
+    </div>
+  </div>
+
+  <!-- ── Pending panel ── -->
+  <section class="tab-panel active" id="panel-pending" aria-labelledby="tab-pending">
+    <div id="pendingContent">
+      <div class="spinner-wrap">
+        <div class="spinner" aria-hidden="true"></div>
+        Loading pending submissions…
+      </div>
+    </div>
+  </section>
+
+  <!-- ── All resources panel ── -->
+  <section class="tab-panel" id="panel-resources" aria-labelledby="tab-resources">
+    <div class="resources-table">
+      <div class="table-toolbar">
+        <input type="text" class="table-search" id="resourceSearch" placeholder="Search resources…" aria-label="Search all resources">
+        <select class="status-filter" id="statusFilter" aria-label="Filter by status">
+          <option value="">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div id="resourcesTableContent">
+        <div class="spinner-wrap"><div class="spinner" aria-hidden="true"></div>Loading…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Users panel ── -->
+  <section class="tab-panel" id="panel-users" aria-labelledby="tab-users">
+    <div class="resources-table">
+      <div class="table-toolbar">
+        <input type="text" class="table-search" id="userSearch" placeholder="Search users…" aria-label="Search users">
+        <button class="btn-sm" id="inviteBtn" style="margin-left:auto">Invite user (send reset link)</button>
+      </div>
+      <div id="usersTableContent">
+        <div class="spinner-wrap"><div class="spinner" aria-hidden="true"></div>Loading…</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Rejection reason modal ── -->
+<div class="modal-overlay" id="rejectModal" role="dialog" aria-modal="true" aria-labelledby="rejectTitle">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="rejectTitle">Reject Submission</h2>
+      <button class="modal-close" id="rejectModalClose" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label for="rejectionReason">Reason for rejection <span style="color:var(--text-3);font-weight:400">(optional — sent to submitter)</span></label>
+      <textarea id="rejectionReason" placeholder="e.g. Duplicate of an existing resource, missing description…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-confirm-reject" id="confirmReject">Confirm rejection</button>
+      <button class="btn-cancel-modal" id="cancelReject">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser    = null;
+let allResources   = [];
+let allUsers       = [];
+let rejectTargetId = null;
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function statusBadge(s) {
+  const map = { pending:'⏳ Pending', approved:'✓ Approved', rejected:'✗ Rejected' };
+  return `<span class="status-badge status-${s}">${map[s]||s}</span>`;
+}
+
+// ── Auth + admin guard ────────────────────────────────────────────────
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = 'auth.html?next=admin.html'; return; }
+  currentUser = session.user;
+
+  // Check admin role
+  const { data: profile } = await sb.from('profiles').select('role').eq('id', currentUser.id).single();
+  if (!profile || profile.role !== 'admin') {
+    document.body.innerHTML = `<div style="padding:80px;text-align:center;font-family:sans-serif">
+      <h2>Access denied</h2><p style="margin-top:8px;color:#64748b">This page is for admins only.</p>
+      <a href="index.html" style="display:inline-block;margin-top:20px;color:#2563eb">← Back to directory</a>
+    </div>`;
+    return;
+  }
+
+  loadAll();
+}
+
+init();
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// ── Load all data ─────────────────────────────────────────────────────
+async function loadAll() {
+  await Promise.all([loadPending(), loadResources(), loadUsers()]);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const panel = tab.dataset.panel;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${panel}`));
+  });
+});
+
+// ── Stats ─────────────────────────────────────────────────────────────
+async function refreshStats() {
+  const [{ count: total }, { count: approved }, { count: pending }, { count: users }] = await Promise.all([
+    sb.from('resources').select('id', { count: 'exact', head: true }),
+    sb.from('resources').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+    sb.from('resources').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+    sb.from('profiles').select('id', { count: 'exact', head: true }),
+  ]);
+
+  document.getElementById('s-total').textContent    = total    ?? '—';
+  document.getElementById('s-approved').textContent = approved ?? '—';
+  document.getElementById('s-pending').textContent  = pending  ?? '—';
+  document.getElementById('s-users').textContent    = users    ?? '—';
+
+  const badge = document.getElementById('pendingCount');
+  badge.textContent = pending ?? '0';
+  badge.style.display = (pending > 0) ? '' : 'none';
+}
+
+// ── Pending queue ─────────────────────────────────────────────────────
+async function loadPending() {
+  const { data, error } = await sb
+    .from('resources')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, notes, created_at, submitted_by, profiles!submitted_by(email, full_name)')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true });
+
+  const el = document.getElementById('pendingContent');
+
+  if (error) { el.innerHTML = `<p style="padding:24px;color:var(--error)">${esc(error.message)}</p>`; return; }
+
+  if (!data || data.length === 0) {
+    el.innerHTML = '<div class="empty">✓ No pending submissions — all caught up!</div>';
+    refreshStats();
+    return;
+  }
+
+  el.innerHTML = `<div class="resource-queue">${data.map(renderQueueCard).join('')}</div>`;
+  refreshStats();
+}
+
+function submitterInfo(row) {
+  const p = row.profiles;
+  if (!p) return 'Unknown submitter';
+  return p.full_name ? `${p.full_name} &lt;${esc(p.email)}&gt;` : esc(p.email);
+}
+
+function renderQueueCard(row) {
+  return `
+<div class="queue-card" id="qcard-${row.id}">
+  <div class="queue-card-header">
+    <div class="queue-card-main">
+      <div class="queue-title">${esc(row.title)}</div>
+      <div class="queue-meta">
+        <span>${esc(row.category || 'Uncategorized')}</span>
+        ${row.subcategory ? `<span class="dot">·</span><span>${esc(row.subcategory)}</span>` : ''}
+        ${row.institution ? `<span class="dot">·</span><span>${esc(row.institution)}</span>` : ''}
+        <span class="dot">·</span>
+        <span>Submitted ${formatDate(row.created_at)}</span>
+        <span class="dot">·</span>
+        <span>By ${submitterInfo(row)}</span>
+      </div>
+    </div>
+  </div>
+  <div class="queue-card-body">
+    ${row.description ? `<p class="queue-desc">${esc(row.description)}</p>` : '<p class="queue-desc" style="color:var(--text-3);font-style:italic">No description provided.</p>'}
+    ${row.link ? `<a href="${esc(row.link)}" target="_blank" rel="noopener noreferrer" class="queue-link">
+      ${esc(row.link)}
+      <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    </a>` : '<span style="font-size:12.5px;color:var(--text-3)">No link provided</span>'}
+  </div>
+  <div class="queue-card-footer">
+    <button class="btn-approve" data-id="${row.id}" onclick="approveResource('${row.id}')">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      Approve
+    </button>
+    <button class="btn-reject" data-id="${row.id}" onclick="openRejectModal('${row.id}')">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      Reject
+    </button>
+    ${row.contact_person ? `<span style="font-size:12px;color:var(--text-3);margin-left:auto">Contact: ${esc(row.contact_person)}</span>` : ''}
+  </div>
+</div>`;
+}
+
+async function approveResource(id) {
+  const btns = document.querySelectorAll(`[data-id="${id}"]`);
+  btns.forEach(b => b.disabled = true);
+
+  const { error } = await sb.from('resources').update({
+    status: 'approved',
+    reviewed_by: currentUser.id,
+    reviewed_at: new Date().toISOString(),
+    rejection_reason: null,
+  }).eq('id', id);
+
+  if (error) {
+    btns.forEach(b => b.disabled = false);
+    alert('Error: ' + error.message);
+  } else {
+    document.getElementById(`qcard-${id}`)?.remove();
+    checkEmptyQueue();
+    refreshStats();
+    loadResources();
+  }
+}
+
+function checkEmptyQueue() {
+  const el = document.getElementById('pendingContent');
+  if (!el.querySelector('.queue-card')) {
+    el.innerHTML = '<div class="empty">✓ No pending submissions — all caught up!</div>';
+  }
+}
+
+// ── Reject modal ──────────────────────────────────────────────────────
+function openRejectModal(id) {
+  rejectTargetId = id;
+  document.getElementById('rejectionReason').value = '';
+  document.getElementById('rejectModal').classList.add('open');
+  document.getElementById('rejectionReason').focus();
+}
+
+function closeRejectModal() {
+  document.getElementById('rejectModal').classList.remove('open');
+  rejectTargetId = null;
+}
+
+document.getElementById('rejectModalClose').addEventListener('click', closeRejectModal);
+document.getElementById('cancelReject').addEventListener('click', closeRejectModal);
+document.getElementById('rejectModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('rejectModal')) closeRejectModal();
+});
+
+document.getElementById('confirmReject').addEventListener('click', async () => {
+  if (!rejectTargetId) return;
+  const reason = document.getElementById('rejectionReason').value.trim();
+  const btn = document.getElementById('confirmReject');
+  btn.disabled = true;
+  btn.textContent = 'Rejecting…';
+
+  const { error } = await sb.from('resources').update({
+    status: 'rejected',
+    reviewed_by: currentUser.id,
+    reviewed_at: new Date().toISOString(),
+    rejection_reason: reason || null,
+  }).eq('id', rejectTargetId);
+
+  btn.disabled = false;
+  btn.textContent = 'Confirm rejection';
+
+  if (error) {
+    alert('Error: ' + error.message);
+  } else {
+    document.getElementById(`qcard-${rejectTargetId}`)?.remove();
+    closeRejectModal();
+    checkEmptyQueue();
+    refreshStats();
+    loadResources();
+  }
+});
+
+// ── All resources ─────────────────────────────────────────────────────
+let resourceFilter = { search: '', status: '' };
+
+async function loadResources() {
+  let q = sb.from('resources').select('id, title, category, status, institution, created_at, submitted_by, profiles!submitted_by(email, full_name)').order('created_at', { ascending: false });
+
+  const { data, error } = await q;
+  if (error) { document.getElementById('resourcesTableContent').innerHTML = `<p style="padding:24px;color:var(--error)">${esc(error.message)}</p>`; return; }
+  allResources = data || [];
+  renderResourcesTable();
+}
+
+document.getElementById('resourceSearch').addEventListener('input', e => {
+  resourceFilter.search = e.target.value.toLowerCase();
+  renderResourcesTable();
+});
+
+document.getElementById('statusFilter').addEventListener('change', e => {
+  resourceFilter.status = e.target.value;
+  renderResourcesTable();
+});
+
+function renderResourcesTable() {
+  const el = document.getElementById('resourcesTableContent');
+  let rows = allResources;
+
+  if (resourceFilter.search) {
+    rows = rows.filter(r =>
+      (r.title||'').toLowerCase().includes(resourceFilter.search) ||
+      (r.category||'').toLowerCase().includes(resourceFilter.search) ||
+      (r.institution||'').toLowerCase().includes(resourceFilter.search)
+    );
+  }
+
+  if (resourceFilter.status) {
+    rows = rows.filter(r => r.status === resourceFilter.status);
+  }
+
+  if (!rows.length) { el.innerHTML = '<div class="empty">No resources match your filters.</div>'; return; }
+
+  el.innerHTML = `
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Category</th>
+      <th>Institution</th>
+      <th>Status</th>
+      <th>Submitted</th>
+      <th>Submitter</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows.map(row => {
+      const p = row.profiles;
+      const submitter = p ? (p.full_name || p.email) : '(legacy)';
+      return `
+      <tr>
+        <td class="td-title">${esc(row.title)}</td>
+        <td>${esc(row.category || '—')}</td>
+        <td>${esc(row.institution || '—')}</td>
+        <td>${statusBadge(row.status)}</td>
+        <td>${formatDate(row.created_at)}</td>
+        <td>${esc(submitter)}</td>
+        <td style="white-space:nowrap">
+          ${row.status !== 'approved'
+            ? `<button class="btn-sm" onclick="quickApprove('${row.id}')">Approve</button> `
+            : ''}
+          ${row.status !== 'rejected'
+            ? `<button class="btn-sm" onclick="openRejectModal('${row.id}')">Reject</button> `
+            : ''}
+          <button class="btn-sm" onclick="deleteResource('${row.id}')" style="color:var(--error);border-color:#fecaca">Delete</button>
+          ${!row.submitted_by ? `<button class="btn-sm" onclick="assignResource('${row.id}')" title="Assign to a user account">Assign</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('')}
+  </tbody>
+</table>`;
+}
+
+async function quickApprove(id) {
+  if (!confirm('Approve this resource?')) return;
+  await sb.from('resources').update({ status: 'approved', reviewed_by: currentUser.id, reviewed_at: new Date().toISOString(), rejection_reason: null }).eq('id', id);
+  loadResources();
+  loadPending();
+  refreshStats();
+}
+
+async function deleteResource(id) {
+  if (!confirm('Permanently delete this resource? This cannot be undone.')) return;
+  const { error } = await sb.from('resources').delete().eq('id', id);
+  if (error) alert('Error: ' + error.message);
+  else { loadResources(); loadPending(); refreshStats(); }
+}
+
+async function assignResource(id) {
+  const email = prompt('Enter the email address of the user to assign this resource to:');
+  if (!email) return;
+  const { data: profile, error } = await sb.from('profiles').select('id').eq('email', email).single();
+  if (error || !profile) { alert('User not found: ' + email); return; }
+  const { error: updErr } = await sb.from('resources').update({ submitted_by: profile.id }).eq('id', id);
+  if (updErr) alert('Error assigning: ' + updErr.message);
+  else { alert('Resource assigned to ' + email); loadResources(); }
+}
+
+// ── Users ──────────────────────────────────────────────────────────────
+let userFilter = '';
+
+async function loadUsers() {
+  const { data, error } = await sb.from('profiles').select('id, email, full_name, institution, role, created_at').order('created_at', { ascending: false });
+  if (error) { document.getElementById('usersTableContent').innerHTML = `<p style="padding:24px;color:var(--error)">${esc(error.message)}</p>`; return; }
+  allUsers = data || [];
+  renderUsersTable();
+  refreshStats();
+}
+
+document.getElementById('userSearch').addEventListener('input', e => {
+  userFilter = e.target.value.toLowerCase();
+  renderUsersTable();
+});
+
+document.getElementById('inviteBtn').addEventListener('click', async () => {
+  const email = prompt('Enter the email address to send a password reset / invite link to:');
+  if (!email) return;
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth.html#reset` });
+  if (error) alert('Error: ' + error.message);
+  else alert(`Reset / invite link sent to ${email}`);
+});
+
+function renderUsersTable() {
+  const el = document.getElementById('usersTableContent');
+  let rows = allUsers;
+  if (userFilter) {
+    rows = rows.filter(u =>
+      (u.email||'').toLowerCase().includes(userFilter) ||
+      (u.full_name||'').toLowerCase().includes(userFilter) ||
+      (u.institution||'').toLowerCase().includes(userFilter)
+    );
+  }
+
+  if (!rows.length) { el.innerHTML = '<div class="empty">No users found.</div>'; return; }
+
+  el.innerHTML = `
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Institution</th>
+      <th>Role</th>
+      <th>Joined</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${rows.map(u => `
+    <tr>
+      <td class="td-title">${esc(u.full_name || '—')}</td>
+      <td>${esc(u.email)}</td>
+      <td>${esc(u.institution || '—')}</td>
+      <td>
+        <select class="role-select" onchange="changeRole('${u.id}', this.value)" aria-label="Change role for ${esc(u.email)}">
+          <option value="user"  ${u.role==='user'  ? 'selected':''}>User</option>
+          <option value="admin" ${u.role==='admin' ? 'selected':''}>Admin</option>
+        </select>
+      </td>
+      <td>${formatDate(u.created_at)}</td>
+      <td>
+        <button class="btn-sm" onclick="sendReset('${esc(u.email)}')">Send reset link</button>
+      </td>
+    </tr>`).join('')}
+  </tbody>
+</table>`;
+}
+
+async function changeRole(userId, newRole) {
+  if (userId === currentUser.id && newRole !== 'admin') {
+    if (!confirm('You are about to remove your own admin rights. Continue?')) {
+      loadUsers(); return;
+    }
+  }
+  const { error } = await sb.from('profiles').update({ role: newRole }).eq('id', userId);
+  if (error) { alert('Error: ' + error.message); loadUsers(); }
+}
+
+async function sendReset(email) {
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth.html#reset` });
+  if (error) alert('Error: ' + error.message);
+  else alert(`Password reset link sent to ${email}`);
+}
+</script>
+</body>
+</html>

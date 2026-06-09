@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit a Resource — Cooperative Extension AI Assets</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-bg: #eff6ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --radius-lg: 14px;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.06);
+      --shadow: 0 4px 16px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.03);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-xs);
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 64px;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: inherit; flex-shrink: 0;
+    }
+
+    .brand-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: var(--radius-sm);
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+
+    .brand-text { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+
+    .header-nav { display: flex; align-items: center; gap: 8px; }
+
+    .nav-link {
+      font-size: 13px; color: var(--text-3); text-decoration: none;
+      padding: 6px 12px; border-radius: 50px;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-link:hover { color: var(--primary); background: var(--primary-bg); }
+
+    /* ── Page layout ── */
+    .page-wrap {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .page-header { margin-bottom: 32px; }
+
+    .page-header h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 8px;
+    }
+
+    .page-header p { font-size: 14px; color: var(--text-2); line-height: 1.65; }
+
+    /* ── Form card ── */
+    .form-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .form-section {
+      padding: 28px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .form-section:last-of-type { border-bottom: none; }
+
+    .section-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 20px;
+    }
+
+    .field { margin-bottom: 20px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+    label {
+      display: block;
+      font-size: 13px; font-weight: 500; color: var(--text-2);
+      margin-bottom: 6px;
+    }
+
+    .required-mark { color: var(--error); margin-left: 2px; }
+
+    .hint {
+      font-size: 11.5px; color: var(--text-3); margin-top: 5px; line-height: 1.5;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 9px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    input::placeholder, textarea::placeholder { color: var(--text-3); }
+
+    textarea { resize: vertical; min-height: 100px; line-height: 1.65; }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' fill='none' stroke='%2364748b' stroke-width='2.5' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* Checkbox group (multi-select) */
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+    }
+
+    .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 15px; height: 15px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Form actions */
+    .form-actions {
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface-2);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      padding: 11px 28px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-cancel {
+      padding: 11px 20px;
+      background: transparent;
+      color: var(--text-2);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+    }
+
+    .btn-cancel:hover { border-color: var(--text-3); color: var(--text); }
+
+    /* Alerts */
+    .alert {
+      display: none; padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; line-height: 1.55; margin-bottom: 24px;
+    }
+
+    .alert.show { display: block; }
+    .alert-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+    .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    /* Auth gate */
+    .auth-gate {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 60px 32px;
+      text-align: center;
+    }
+
+    .auth-gate h2 { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+    .auth-gate p  { font-size: 14px; color: var(--text-2); line-height: 1.65; margin-bottom: 24px; }
+
+    .auth-gate .btn-primary { display: inline-block; text-decoration: none; }
+
+    .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+    :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" style="position:fixed;top:-100px;left:16px;z-index:1000;padding:10px 20px;background:var(--primary);color:white;border-radius:0 0 6px 6px;font-size:14px;font-weight:600;text-decoration:none"
+   onfocus="this.style.top='0'" onblur="this.style.top='-100px'">Skip to main content</a>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="brand">
+      <div class="brand-icon">
+        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <span class="brand-text">Cooperative Extension AI Assets</span>
+    </a>
+    <nav class="header-nav" aria-label="Site navigation">
+      <a href="index.html" class="nav-link">← Directory</a>
+      <a href="my-submissions.html" class="nav-link" id="mySubsLink" style="display:none">My Submissions</a>
+    </nav>
+  </div>
+</header>
+
+<main class="page-wrap" id="main-content">
+
+  <div class="page-header">
+    <h1>Submit a Resource</h1>
+    <p>Share an AI asset with the Cooperative Extension community. All submissions are reviewed before being published.</p>
+  </div>
+
+  <div class="alert alert-error"   id="form-error"   role="alert"></div>
+  <div class="alert alert-success" id="form-success" role="alert"></div>
+
+  <!-- Auth gate — shown when not logged in -->
+  <div class="auth-gate" id="authGate" style="display:none">
+    <svg width="48" height="48" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 16px" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <h2>Sign in to submit a resource</h2>
+    <p>You need an account to submit resources to the directory.<br>Registration is free and open to all Extension professionals.</p>
+    <a href="auth.html?next=submit.html" class="btn-primary">Sign in / Register</a>
+  </div>
+
+  <!-- Submission form — shown when logged in -->
+  <form class="form-card" id="submitForm" style="display:none" novalidate>
+
+    <div class="form-section">
+      <div class="section-title">Basic information</div>
+
+      <div class="field">
+        <label for="f-title">Resource name / title <span class="required-mark" aria-hidden="true">*</span></label>
+        <input type="text" id="f-title" placeholder="e.g. AI for Extension Educators — Prompt Writing Guide" required maxlength="300">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-category">Category <span class="required-mark" aria-hidden="true">*</span></label>
+          <select id="f-category" required>
+            <option value="">Select a category…</option>
+            <option>AI Tools &amp; Platforms</option>
+            <option>Training &amp; Education</option>
+            <option>Policy &amp; Governance</option>
+            <option>Research &amp; Publications</option>
+            <option>Templates &amp; Prompts</option>
+            <option>Case Studies</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-subcategory">Subcategory</label>
+          <input type="text" id="f-subcategory" placeholder="Optional subcategory" maxlength="150">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-description">Description</label>
+        <textarea id="f-description" placeholder="Describe what this resource is, who it's for, and how it's used…" maxlength="2000"></textarea>
+        <p class="hint">Plain text, no formatting needed. Max 2,000 characters.</p>
+      </div>
+
+      <div class="field">
+        <label for="f-link">Link / URL</label>
+        <input type="url" id="f-link" placeholder="https://" maxlength="500">
+        <p class="hint">Must start with https://</p>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Classification</div>
+
+      <div class="field">
+        <label id="prog-label">Program area(s)</label>
+        <div class="checkbox-group" role="group" aria-labelledby="prog-label">
+          <label><input type="checkbox" name="programs" value="4-H"> 4-H</label>
+          <label><input type="checkbox" name="programs" value="Agriculture"> Agriculture</label>
+          <label><input type="checkbox" name="programs" value="Community Development"> Community Development</label>
+          <label><input type="checkbox" name="programs" value="Family &amp; Consumer Sciences"> Family &amp; Consumer Sciences</label>
+          <label><input type="checkbox" name="programs" value="Forestry &amp; Natural Resources"> Forestry &amp; Natural Resources</label>
+          <label><input type="checkbox" name="programs" value="Master Gardener"> Master Gardener</label>
+          <label><input type="checkbox" name="programs" value="Nutrition"> Nutrition</label>
+          <label><input type="checkbox" name="programs" value="Other"> Other</label>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label id="kl-label">Knowledge level</label>
+          <div class="checkbox-group" role="group" aria-labelledby="kl-label">
+            <label><input type="checkbox" name="knowledge_level" value="Beginner"> Beginner</label>
+            <label><input type="checkbox" name="knowledge_level" value="Intermediate"> Intermediate</label>
+            <label><input type="checkbox" name="knowledge_level" value="Advanced"> Advanced</label>
+          </div>
+        </div>
+        <div class="field">
+          <label id="aud-label">Audience</label>
+          <div class="checkbox-group" role="group" aria-labelledby="aud-label">
+            <label><input type="checkbox" name="audience" value="Extension Professionals"> Extension Professionals</label>
+            <label><input type="checkbox" name="audience" value="Clientele / Public"> Clientele / Public</label>
+            <label><input type="checkbox" name="audience" value="Youth"> Youth</label>
+            <label><input type="checkbox" name="audience" value="Volunteers"> Volunteers</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-service-area">Service area / geography</label>
+          <input type="text" id="f-service-area" placeholder="e.g. National, Midwest, Montana" maxlength="150">
+        </div>
+        <div class="field">
+          <label for="f-contact">Contact person for more info</label>
+          <input type="text" id="f-contact" placeholder="Name or email" maxlength="200">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">Affiliation</div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-institution">Institution / unit where asset is housed</label>
+          <input type="text" id="f-institution" placeholder="e.g. University of State Extension" maxlength="300">
+        </div>
+        <div class="field">
+          <label for="f-notes">Additional notes</label>
+          <input type="text" id="f-notes" placeholder="Any other context or caveats" maxlength="500">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" id="submitBtn">Submit for review</button>
+      <a href="index.html" class="btn-cancel">Cancel</a>
+      <span style="font-size:12px;color:var(--text-3);margin-left:auto">
+        Submissions are reviewed before being published.
+      </span>
+    </div>
+
+  </form>
+
+</main>
+
+<script>
+const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+
+// ── Auth gate ─────────────────────────────────────────────────────────
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  currentUser = session?.user ?? null;
+
+  if (currentUser) {
+    document.getElementById('authGate').style.display   = 'none';
+    document.getElementById('submitForm').style.display = 'block';
+    document.getElementById('mySubsLink').style.display = 'inline-flex';
+
+    // Pre-fill institution from profile
+    const { data: profile } = await sb.from('profiles').select('institution').eq('id', currentUser.id).single();
+    if (profile?.institution) {
+      document.getElementById('f-institution').value = profile.institution;
+    }
+  } else {
+    document.getElementById('authGate').style.display   = 'block';
+    document.getElementById('submitForm').style.display = 'none';
+  }
+}
+
+initAuth();
+
+// ── Checkbox helpers ──────────────────────────────────────────────────
+function getChecked(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+}
+
+// ── Submit ────────────────────────────────────────────────────────────
+document.getElementById('submitForm').addEventListener('submit', async e => {
+  e.preventDefault();
+
+  const errorEl   = document.getElementById('form-error');
+  const successEl = document.getElementById('form-success');
+  const btn       = document.getElementById('submitBtn');
+
+  errorEl.classList.remove('show');
+  successEl.classList.remove('show');
+
+  const title = document.getElementById('f-title').value.trim();
+  const cat   = document.getElementById('f-category').value;
+
+  if (!title) { errorEl.textContent = 'Please enter a title.'; errorEl.classList.add('show'); return; }
+  if (!cat)   { errorEl.textContent = 'Please select a category.'; errorEl.classList.add('show'); return; }
+
+  const link = document.getElementById('f-link').value.trim();
+  if (link && !link.startsWith('https://') && !link.startsWith('http://')) {
+    errorEl.textContent = 'The link must start with https://';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const payload = {
+    title,
+    category:        cat,
+    subcategory:     document.getElementById('f-subcategory').value.trim()    || null,
+    description:     document.getElementById('f-description').value.trim()    || null,
+    link:            link || null,
+    programs:        getChecked('programs'),
+    knowledge_level: getChecked('knowledge_level'),
+    audience:        getChecked('audience'),
+    service_area:    document.getElementById('f-service-area').value.trim()   || null,
+    contact_person:  document.getElementById('f-contact').value.trim()        || null,
+    institution:     document.getElementById('f-institution').value.trim()    || null,
+    notes:           document.getElementById('f-notes').value.trim()          || null,
+    submitted_by:    currentUser.id,
+    status:          'pending',
+  };
+
+  const { error } = await sb.from('resources').insert(payload);
+
+  btn.disabled = false;
+  btn.textContent = 'Submit for review';
+
+  if (error) {
+    errorEl.textContent = 'There was a problem submitting your resource: ' + error.message;
+    errorEl.classList.add('show');
+  } else {
+    successEl.textContent = 'Your resource has been submitted and is pending review. Thank you!';
+    successEl.classList.add('show');
+    document.getElementById('submitForm').reset();
+    document.getElementById('submitForm').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+</script>
+</body>
+</html>

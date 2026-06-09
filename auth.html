@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Cooperative Extension AI Assets</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f4f8;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-2: #475569;
+      --text-3: #64748b;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-bg: #eff6ff;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --error: #dc2626;
+      --error-bg: #fef2f2;
+      --radius-lg: 14px;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      padding: 28px 32px;
+      text-align: center;
+    }
+
+    .card-header a {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.3;
+      text-align: left;
+    }
+
+    .card-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.02em;
+    }
+
+    .card-body { padding: 32px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-3);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .tab-btn:hover:not(.active) { color: var(--text-2); }
+
+    /* Panels */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Form elements */
+    .field { margin-bottom: 18px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    input::placeholder { color: var(--text-3); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      margin-top: 4px;
+    }
+
+    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Alert messages */
+    .alert {
+      display: none;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .alert.show { display: block; }
+    .alert-error   { background: var(--error-bg);   color: var(--error);   border: 1px solid #fecaca; }
+    .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    .forgot-link {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: var(--primary);
+      text-decoration: none;
+      margin-top: -10px;
+      margin-bottom: 18px;
+    }
+
+    .forgot-link:hover { text-decoration: underline; }
+
+    .divider {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0; right: 0;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span { background: var(--surface); padding: 0 10px; position: relative; }
+
+    .card-footer-text {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-footer-text a { color: var(--primary); text-decoration: none; }
+    .card-footer-text a:hover { text-decoration: underline; }
+
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+
+    :focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+
+    input:focus-visible { outline: none; }
+  </style>
+</head>
+<body>
+
+<div class="card" role="main">
+
+  <div class="card-header">
+    <a href="index.html">
+      <div class="brand-icon">
+        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <span class="brand-name">Cooperative Extension<br>AI Assets</span>
+    </a>
+    <h1 id="cardHeading">Sign In</h1>
+  </div>
+
+  <div class="card-body">
+
+    <div class="tabs" role="tablist" aria-label="Authentication options">
+      <button class="tab-btn active" id="tab-signin" role="tab" aria-selected="true"  aria-controls="panel-signin">Sign In</button>
+      <button class="tab-btn"        id="tab-register" role="tab" aria-selected="false" aria-controls="panel-register">Register</button>
+      <button class="tab-btn"        id="tab-forgot"   role="tab" aria-selected="false" aria-controls="panel-forgot">Forgot Password</button>
+    </div>
+
+    <!-- ── Sign In ── -->
+    <section id="panel-signin" class="panel active" role="tabpanel" aria-labelledby="tab-signin">
+      <div class="alert alert-error" id="signin-error" role="alert"></div>
+      <div class="alert alert-success" id="signin-success" role="alert"></div>
+
+      <form id="signinForm" novalidate>
+        <div class="field">
+          <label for="signin-email">Email address</label>
+          <input type="email" id="signin-email" autocomplete="email" placeholder="you@extension.org" required>
+        </div>
+        <div class="field">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <a href="#" class="forgot-link" id="goForgot">Forgot your password?</a>
+        <button type="submit" class="btn-primary" id="signinBtn">Sign in</button>
+      </form>
+    </section>
+
+    <!-- ── Register ── -->
+    <section id="panel-register" class="panel" role="tabpanel" aria-labelledby="tab-register">
+      <div class="alert alert-error"   id="register-error"   role="alert"></div>
+      <div class="alert alert-success" id="register-success" role="alert"></div>
+
+      <form id="registerForm" novalidate>
+        <div class="field">
+          <label for="reg-name">Full name</label>
+          <input type="text" id="reg-name" autocomplete="name" placeholder="Jane Smith" required>
+        </div>
+        <div class="field">
+          <label for="reg-institution">Institution / unit</label>
+          <input type="text" id="reg-institution" autocomplete="organization" placeholder="University of State Extension">
+        </div>
+        <div class="field">
+          <label for="reg-email">Email address</label>
+          <input type="email" id="reg-email" autocomplete="email" placeholder="you@extension.org" required>
+        </div>
+        <div class="field">
+          <label for="reg-password">Password <span style="color:var(--text-3);font-weight:400">(8+ characters)</span></label>
+          <input type="password" id="reg-password" autocomplete="new-password" placeholder="••••••••" required minlength="8">
+        </div>
+        <button type="submit" class="btn-primary" id="registerBtn">Create account</button>
+      </form>
+    </section>
+
+    <!-- ── Forgot Password ── -->
+    <section id="panel-forgot" class="panel" role="tabpanel" aria-labelledby="tab-forgot">
+      <div class="alert alert-error"   id="forgot-error"   role="alert"></div>
+      <div class="alert alert-success" id="forgot-success" role="alert"></div>
+
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:18px;line-height:1.6">
+        Enter your email address and we'll send you a link to reset your password.
+      </p>
+
+      <form id="forgotForm" novalidate>
+        <div class="field">
+          <label for="forgot-email">Email address</label>
+          <input type="email" id="forgot-email" autocomplete="email" placeholder="you@extension.org" required>
+        </div>
+        <button type="submit" class="btn-primary" id="forgotBtn">Send reset link</button>
+      </form>
+    </section>
+
+    <div class="card-footer-text">
+      <a href="index.html">← Back to the directory</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── Redirect if already logged in ────────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) window.location.href = 'index.html';
+})();
+
+// ── Tab switching ─────────────────────────────────────────────────────
+const tabs = document.querySelectorAll('.tab-btn');
+const panels = document.querySelectorAll('.panel');
+
+function activateTab(id) {
+  tabs.forEach(t => {
+    const active = t.id === `tab-${id}`;
+    t.classList.toggle('active', active);
+    t.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  panels.forEach(p => p.classList.toggle('active', p.id === `panel-${id}`));
+  document.getElementById('cardHeading').textContent =
+    id === 'signin' ? 'Sign In' : id === 'register' ? 'Create Account' : 'Reset Password';
+}
+
+tabs.forEach(t => t.addEventListener('click', () => {
+  activateTab(t.id.replace('tab-', ''));
+}));
+
+document.getElementById('goForgot').addEventListener('click', e => {
+  e.preventDefault();
+  activateTab('forgot');
+});
+
+// Check URL hash for deep link to register tab
+if (window.location.hash === '#register') activateTab('register');
+
+// ── Helpers ───────────────────────────────────────────────────────────
+function showMsg(prefix, type, msg) {
+  const el = document.getElementById(`${prefix}-${type}`);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearMsgs(prefix) {
+  ['error', 'success'].forEach(t => {
+    const el = document.getElementById(`${prefix}-${t}`);
+    if (el) { el.textContent = ''; el.classList.remove('show'); }
+  });
+}
+
+function setLoading(btn, loading) {
+  btn.disabled = loading;
+  btn.textContent = loading ? 'Please wait…' : btn.dataset.label;
+}
+
+// Store original labels
+['signinBtn','registerBtn','forgotBtn'].forEach(id => {
+  const btn = document.getElementById(id);
+  btn.dataset.label = btn.textContent;
+});
+
+// ── Sign In ───────────────────────────────────────────────────────────
+document.getElementById('signinForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  clearMsgs('signin');
+  const btn   = document.getElementById('signinBtn');
+  const email = document.getElementById('signin-email').value.trim();
+  const pass  = document.getElementById('signin-password').value;
+
+  if (!email || !pass) { showMsg('signin', 'error', 'Please fill in all fields.'); return; }
+
+  setLoading(btn, true);
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  setLoading(btn, false);
+
+  if (error) {
+    showMsg('signin', 'error', error.message);
+  } else {
+    // Redirect to submit page or wherever they came from
+    const next = new URLSearchParams(window.location.search).get('next') || 'index.html';
+    window.location.href = next;
+  }
+});
+
+// ── Register ──────────────────────────────────────────────────────────
+document.getElementById('registerForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  clearMsgs('register');
+  const btn         = document.getElementById('registerBtn');
+  const name        = document.getElementById('reg-name').value.trim();
+  const institution = document.getElementById('reg-institution').value.trim();
+  const email       = document.getElementById('reg-email').value.trim();
+  const pass        = document.getElementById('reg-password').value;
+
+  if (!name || !email || !pass) { showMsg('register', 'error', 'Please fill in all required fields.'); return; }
+  if (pass.length < 8)          { showMsg('register', 'error', 'Password must be at least 8 characters.'); return; }
+
+  setLoading(btn, true);
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: {
+      data: { full_name: name, institution }
+    }
+  });
+  setLoading(btn, false);
+
+  if (error) {
+    showMsg('register', 'error', error.message);
+    return;
+  }
+
+  // Update profile with name + institution (trigger creates the row)
+  if (data.user) {
+    await sb.from('profiles').upsert({
+      id: data.user.id,
+      email,
+      full_name: name,
+      institution: institution || null,
+    });
+  }
+
+  showMsg('register', 'success',
+    data.session
+      ? 'Account created! Redirecting…'
+      : 'Account created! Check your email to confirm your address, then sign in.'
+  );
+
+  if (data.session) {
+    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+  }
+});
+
+// ── Forgot Password ───────────────────────────────────────────────────
+document.getElementById('forgotForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  clearMsgs('forgot');
+  const btn   = document.getElementById('forgotBtn');
+  const email = document.getElementById('forgot-email').value.trim();
+
+  if (!email) { showMsg('forgot', 'error', 'Please enter your email address.'); return; }
+
+  setLoading(btn, true);
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/auth.html#reset`
+  });
+  setLoading(btn, false);
+
+  if (error) {
+    showMsg('forgot', 'error', error.message);
+  } else {
+    showMsg('forgot', 'success', 'Password reset link sent! Check your inbox.');
+  }
+});
+
+// ── Handle password reset redirect (magic link return) ────────────────
+if (window.location.hash === '#reset' || window.location.hash.includes('type=recovery')) {
+  activateTab('forgot');
+  // Supabase handles the token in the URL fragment; on the next onAuthStateChange
+  // with event = 'PASSWORD_RECOVERY' we should show a new password form.
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      const newPass = prompt('Enter your new password (8+ characters):');
+      if (newPass && newPass.length >= 8) {
+        const { error } = await sb.auth.updateUser({ password: newPass });
+        if (error) {
+          alert('Error updating password: ' + error.message);
+        } else {
+          alert('Password updated! You are now signed in.');
+          window.location.href = 'index.html';
+        }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

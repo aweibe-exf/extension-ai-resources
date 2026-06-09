@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cooperative Extension AI Assets</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1122,6 +1122,40 @@
       .hero-stats { flex-direction: column; gap: 12px; }
       .brand-text-main { font-size: 13px; }
     }
+
+    /* ── Auth nav ── */
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: transparent;
+      color: var(--text-2);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      font-size: 13.5px;
+      font-weight: 500;
+      font-family: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    #authSignedIn { align-items: center; gap: 8px; }
+    #authSignedOut { align-items: center; gap: 8px; }
+    .auth-user-label {
+      font-size: 13px;
+      color: var(--text-3);
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -1151,13 +1185,28 @@
     </div>
 
     <div class="header-actions">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLScukP6Ne0GzcWW8R3GMAa3xCqQnAcrE0aQkrMrBEYKiSOQqDw/viewform"
-         class="btn-add" target="_blank" rel="noopener noreferrer">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        Add a Resource
-      </a>
+      <!-- Signed-out state -->
+      <div id="authSignedOut" style="display:flex">
+        <a href="auth.html" class="btn-ghost">Sign in</a>
+        <a href="auth.html#register" class="btn-add" style="margin-left:8px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add a Resource
+        </a>
+      </div>
+      <!-- Signed-in state -->
+      <div id="authSignedIn" style="display:none">
+        <span class="auth-user-label">Hi, <strong id="authUserName"></strong></span>
+        <a href="my-submissions.html" class="btn-ghost" style="margin-left:8px">My Submissions</a>
+        <a href="submit.html" class="btn-add" style="margin-left:8px">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Add a Resource
+        </a>
+        <button id="signOutBtn" class="btn-ghost" style="margin-left:8px">Sign out</button>
+      </div>
     </div>
   </div>
 </header>
@@ -1328,8 +1377,9 @@
   </div>
 
   <div class="footer-links">
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLScukP6Ne0GzcWW8R3GMAa3xCqQnAcrE0aQkrMrBEYKiSOQqDw/viewform"
-       target="_blank" rel="noopener noreferrer">Submit a resource</a>
+    <a href="submit.html">Submit a resource</a>
+    <span class="dot">·</span>
+    <a href="auth.html">Sign in / Register</a>
   </div>
 
   <div class="footer-disclaimer">
@@ -1343,8 +1393,9 @@
 
 <script>
 // ── Config ──────────────────────────────────────────────────────────
-const SHEET_ID = '1i8PW58wAOYaWn9YU_wH9fPrfACTtmWt8vMtvu0G3Fs0';
-const CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Category → accent color palette (bg, text, bar)
 const CAT_PALETTE = [
@@ -1369,6 +1420,7 @@ let sortBy        = 'date-asc';
 let currentView   = 'list';
 let currentPage   = 1;
 let pageSize      = 25;
+let currentUser   = null;
 
 const filters = {
   search:       '',
@@ -1395,9 +1447,11 @@ function safeHref(url) {
   return u;
 }
 
-function splitCSV(val) {
+// Handles Postgres arrays (already arrays) and legacy comma-separated strings
+function toArr(val) {
   if (!val) return [];
-  return val.split(',').map(s => s.trim()).filter(Boolean);
+  if (Array.isArray(val)) return val.filter(Boolean);
+  return String(val).split(',').map(s => s.trim()).filter(Boolean);
 }
 
 function uniqueSorted(arr) {
@@ -1405,7 +1459,7 @@ function uniqueSorted(arr) {
 }
 
 function parseTimestamp(row) {
-  const raw = row['Timestamp'] || row['Date added'] || '';
+  const raw = row.legacy_timestamp || row.created_at || '';
   if (!raw) return 0;
   return new Date(raw).getTime() || 0;
 }
@@ -1419,11 +1473,15 @@ function highlightMatch(text, query) {
 // ── Data load ────────────────────────────────────────────────────────
 async function loadData() {
   try {
-    const res  = await fetch(CSV_URL);
-    const text = await res.text();
-    const { data } = Papa.parse(text, { header: true, skipEmptyLines: true });
+    const { data, error } = await sb
+      .from('resources')
+      .select('id, title, category, subcategory, description, programs, knowledge_level, audience, contact_person, institution, link, service_area, notes, created_at, legacy_timestamp')
+      .eq('status', 'approved')
+      .order('legacy_timestamp', { ascending: true, nullsFirst: false });
 
-    allData = data.filter(r => r['Asset Name/Title'] && r['Asset Name/Title'].trim());
+    if (error) throw error;
+
+    allData = data || [];
 
     buildFilters();
     applyFilters();
@@ -1438,7 +1496,7 @@ async function loadData() {
           </svg>
         </div>
         <h3>Couldn't load resources</h3>
-        <p>The Google Sheet may be private or there's a network issue.<br>Please try refreshing the page.</p>
+        <p>There was a problem connecting to the database.<br>Please try refreshing the page.</p>
       </div>`;
     document.getElementById('resultsCount').textContent = '';
   }
@@ -1447,7 +1505,7 @@ async function loadData() {
 // ── Build filter options ─────────────────────────────────────────────
 function buildFilters() {
   // Category colors
-  const cats = uniqueSorted(allData.map(r => r['Category']));
+  const cats = uniqueSorted(allData.map(r => r.category));
   cats.forEach((cat, i) => {
     catColorMap[cat] = CAT_PALETTE[i % CAT_PALETTE.length];
   });
@@ -1469,25 +1527,25 @@ function buildFilters() {
   });
 
   // Service Area
-  populateSelect('serviceAreaFilter', uniqueSorted(allData.map(r => r['Service Area'])));
+  populateSelect('serviceAreaFilter', uniqueSorted(allData.map(r => r.service_area)));
 
-  // Knowledge Level (multi-value per cell)
+  // Knowledge Level (Postgres array column)
   const klSet = new Set();
-  allData.forEach(r => splitCSV(r['Knowledge Level']).forEach(v => klSet.add(v)));
+  allData.forEach(r => toArr(r.knowledge_level).forEach(v => klSet.add(v)));
   populateSelect('knowledgeFilter', uniqueSorted([...klSet]));
 
-  // Program (multi-value per cell)
+  // Programs (Postgres array column)
   const progSet = new Set();
-  allData.forEach(r => splitCSV(r['Program/s']).forEach(v => progSet.add(v)));
+  allData.forEach(r => toArr(r.programs).forEach(v => progSet.add(v)));
   populateSelect('programFilter', uniqueSorted([...progSet]));
 
-  // Audience (multi-value per cell)
+  // Audience (Postgres array column)
   const audSet = new Set();
-  allData.forEach(r => splitCSV(r['Audience']).forEach(v => audSet.add(v)));
+  allData.forEach(r => toArr(r.audience).forEach(v => audSet.add(v)));
   populateSelect('audienceFilter', uniqueSorted([...audSet]));
 
   // Institution list for typeahead
-  instList = uniqueSorted(allData.map(r => r['Institution/Unit where asset is housed']));
+  instList = uniqueSorted(allData.map(r => r.institution));
 }
 
 function populateSelect(id, values) {
@@ -1513,39 +1571,36 @@ function applyFilters() {
   filteredData = allData.filter(row => {
     if (q) {
       const blob = [
-        row['Asset Name/Title'],
-        row['Description'],
-        row['Institution/Unit where asset is housed'],
-        row['Contact person for more info'],
-        row['Category'],
-        row['Subcategory'],
-        row['Program/s'],
-        row['Notes'],
-      ].join(' ').toLowerCase();
+        row.title,
+        row.description,
+        row.institution,
+        row.contact_person,
+        row.category,
+        row.subcategory,
+        ...toArr(row.programs),
+        row.notes,
+      ].filter(Boolean).join(' ').toLowerCase();
       if (!blob.includes(q)) return false;
     }
 
-    if (filters.category && row['Category'] !== filters.category) return false;
+    if (filters.category && row.category !== filters.category) return false;
 
-    if (filters.serviceArea && row['Service Area'] !== filters.serviceArea) return false;
+    if (filters.serviceArea && row.service_area !== filters.serviceArea) return false;
 
     if (filters.knowledge) {
-      const kls = splitCSV(row['Knowledge Level']);
-      if (!kls.includes(filters.knowledge)) return false;
+      if (!toArr(row.knowledge_level).includes(filters.knowledge)) return false;
     }
 
     if (filters.program) {
-      const progs = splitCSV(row['Program/s']);
-      if (!progs.includes(filters.program)) return false;
+      if (!toArr(row.programs).includes(filters.program)) return false;
     }
 
     if (filters.audience) {
-      const auds = splitCSV(row['Audience']);
-      if (!auds.includes(filters.audience)) return false;
+      if (!toArr(row.audience).includes(filters.audience)) return false;
     }
 
     if (filters.institution) {
-      const inst = (row['Institution/Unit where asset is housed'] || '').toLowerCase();
+      const inst = (row.institution || '').toLowerCase();
       if (!inst.includes(filters.institution.toLowerCase())) return false;
     }
 
@@ -1555,8 +1610,8 @@ function applyFilters() {
   // Sort
   filteredData.sort((a, b) => {
     switch (sortBy) {
-      case 'name-asc':  return (a['Asset Name/Title']||'').localeCompare(b['Asset Name/Title']||'');
-      case 'name-desc': return (b['Asset Name/Title']||'').localeCompare(a['Asset Name/Title']||'');
+      case 'name-asc':  return (a.title||'').localeCompare(b.title||'');
+      case 'name-desc': return (b.title||'').localeCompare(a.title||'');
       case 'date-asc':  return parseTimestamp(a) - parseTimestamp(b);
       default:          return parseTimestamp(b) - parseTimestamp(a);
     }
@@ -1602,17 +1657,17 @@ function renderCards() {
 }
 
 function renderListItem(row) {
-  const cat     = row['Category'] || 'Other';
+  const cat     = row.category || 'Other';
   const colors  = catColorMap[cat] || { bg: '#f1f5f9', text: '#64748b', bar: '#94a3b8' };
-  const sub     = row['Subcategory'];
-  const title   = row['Asset Name/Title'];
-  const inst    = row['Institution/Unit where asset is housed'];
-  const desc    = row['Description'];
-  const link    = safeHref(row['Link/Resource']);
-  const contact = row['Contact person for more info'];
-  const sa      = row['Service Area'];
-  const kls     = splitCSV(row['Knowledge Level']);
-  const progs   = splitCSV(row['Program/s']).filter(p => p && p.toLowerCase() !== 'other');
+  const sub     = row.subcategory;
+  const title   = row.title;
+  const inst    = row.institution;
+  const desc    = row.description;
+  const link    = safeHref(row.link);
+  const contact = row.contact_person;
+  const sa      = row.service_area;
+  const kls     = toArr(row.knowledge_level);
+  const progs   = toArr(row.programs).filter(p => p && p.toLowerCase() !== 'other');
   const q       = filters.search;
 
   return `
@@ -1659,13 +1714,13 @@ function renderListItem(row) {
 }
 
 function renderCompactItem(row) {
-  const cat    = row['Category'] || 'Other';
+  const cat    = row.category || 'Other';
   const colors = catColorMap[cat] || { bg: '#f1f5f9', text: '#64748b', bar: '#94a3b8' };
-  const title  = row['Asset Name/Title'];
-  const inst   = row['Institution/Unit where asset is housed'];
-  const link   = safeHref(row['Link/Resource']);
-  const sa     = row['Service Area'];
-  const kls    = splitCSV(row['Knowledge Level']);
+  const title  = row.title;
+  const inst   = row.institution;
+  const link   = safeHref(row.link);
+  const sa     = row.service_area;
+  const kls    = toArr(row.knowledge_level);
   const q      = filters.search;
 
   return `
@@ -1690,19 +1745,19 @@ function renderCompactItem(row) {
 }
 
 function renderCard(row) {
-  const cat      = row['Category'] || 'Other';
+  const cat      = row.category || 'Other';
   const colors   = catColorMap[cat] || { bg: '#f1f5f9', text: '#64748b', bar: '#94a3b8' };
-  const sub      = row['Subcategory'];
-  const title    = row['Asset Name/Title'];
-  const inst     = row['Institution/Unit where asset is housed'];
-  const desc     = row['Description'];
-  const link     = safeHref(row['Link/Resource']);
-  const contact  = row['Contact person for more info'];
-  const sa       = row['Service Area'];
-  const kls      = splitCSV(row['Knowledge Level']);
-  const progs    = splitCSV(row['Program/s']).filter(p => p && p.toLowerCase() !== 'other');
-  const auds     = splitCSV(row['Audience']);
-  const notes    = row['Notes'];
+  const sub      = row.subcategory;
+  const title    = row.title;
+  const inst     = row.institution;
+  const desc     = row.description;
+  const link     = safeHref(row.link);
+  const contact  = row.contact_person;
+  const sa       = row.service_area;
+  const kls      = toArr(row.knowledge_level);
+  const progs    = toArr(row.programs).filter(p => p && p.toLowerCase() !== 'other');
+  const auds     = toArr(row.audience);
+  const notes    = row.notes;
 
   const q = filters.search;
 
@@ -2054,7 +2109,43 @@ document.querySelector('.view-toggle').addEventListener('click', e => {
   renderCards();
 });
 
+// ── Auth ──────────────────────────────────────────────────────────────
+function updateAuthHeader(user) {
+  currentUser = user;
+  const signedOutEl = document.getElementById('authSignedOut');
+  const signedInEl  = document.getElementById('authSignedIn');
+  const userNameEl  = document.getElementById('authUserName');
+
+  if (user) {
+    signedOutEl.style.display = 'none';
+    signedInEl.style.display  = 'flex';
+    if (userNameEl) {
+      // Show first name from full email local-part, or profile name if available
+      userNameEl.textContent = user.email ? user.email.split('@')[0] : 'you';
+    }
+  } else {
+    signedOutEl.style.display = 'flex';
+    signedInEl.style.display  = 'none';
+  }
+}
+
+async function initAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  updateAuthHeader(session?.user ?? null);
+
+  // Update header whenever auth state changes (login / logout in another tab)
+  sb.auth.onAuthStateChange((_event, session) => {
+    updateAuthHeader(session?.user ?? null);
+  });
+}
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  // Header updates via onAuthStateChange listener
+});
+
 // ── Boot ─────────────────────────────────────────────────────────────
+initAuth();
 loadData();
 </script>
 </body>
