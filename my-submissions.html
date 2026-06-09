@@ -438,6 +438,7 @@
           <input type="text" id="edit-institution" list="institution-list" autocomplete="off">
           <datalist id="institution-list">
             <option value="Extension Foundation">
+            <option value="Journal of Extension">
             <option value="NDEET (National Digital Extension Education Team)">
             <option value="Auburn University">
             <option value="University of Alaska Fairbanks">
@@ -459,6 +460,7 @@
             <option value="Louisiana State University AgCenter">
             <option value="University of Maine">
             <option value="University of Maryland">
+            <option value="University of Maryland Eastern Shore">
             <option value="University of Massachusetts Amherst">
             <option value="Michigan State University">
             <option value="University of Minnesota Extension">
@@ -549,7 +551,12 @@
             <option value="United Tribes Technical College">
             <option value="White Earth Tribal and Community College">
             <option value="Wind River Tribal College">
+            <!-- Other -->
+            <option value="Other">
           </datalist>
+          <div id="edit-institution-other-wrap" style="display:none;margin-top:6px">
+            <input type="text" id="edit-institution-other" placeholder="Enter your institution name" maxlength="300" autocomplete="off">
+          </div>
         </div>
         <div class="modal-field">
           <label for="edit-contact">Contact person</label>
@@ -733,6 +740,13 @@ function closeModal() {
   editingId = null;
 }
 
+// Institution "Other" toggle in edit modal
+document.getElementById('edit-institution').addEventListener('input', function() {
+  const wrap = document.getElementById('edit-institution-other-wrap');
+  wrap.style.display = this.value.trim().toLowerCase() === 'other' ? 'block' : 'none';
+  if (wrap.style.display === 'none') document.getElementById('edit-institution-other').value = '';
+});
+
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 document.getElementById('editModal').addEventListener('click', e => {
@@ -762,7 +776,13 @@ document.getElementById('modalSave').addEventListener('click', async () => {
     subcategory:    document.getElementById('edit-subcategory').value.trim()  || null,
     description:    document.getElementById('edit-description').value.trim()  || null,
     link:           document.getElementById('edit-link').value.trim()         || null,
-    institution:    document.getElementById('edit-institution').value.trim()  || null,
+    institution:    (() => {
+      const v = document.getElementById('edit-institution').value.trim();
+      if (v.toLowerCase() === 'other') {
+        return document.getElementById('edit-institution-other').value.trim() || null;
+      }
+      return v || null;
+    })(),
     contact_person: document.getElementById('edit-contact').value.trim()      || null,
     notes:          document.getElementById('edit-notes').value.trim()        || null,
     status:         'pending',  // re-queue for review on edit

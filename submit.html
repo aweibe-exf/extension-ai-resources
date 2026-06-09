@@ -429,6 +429,7 @@
           <datalist id="institution-list">
             <!-- Extension Network -->
             <option value="Extension Foundation">
+            <option value="Journal of Extension">
             <option value="NDEET (National Digital Extension Education Team)">
             <!-- 1862 Land-Grant Universities -->
             <option value="Auburn University">
@@ -451,6 +452,7 @@
             <option value="Louisiana State University AgCenter">
             <option value="University of Maine">
             <option value="University of Maryland">
+            <option value="University of Maryland Eastern Shore">
             <option value="University of Massachusetts Amherst">
             <option value="Michigan State University">
             <option value="University of Minnesota Extension">
@@ -544,8 +546,13 @@
             <option value="United Tribes Technical College">
             <option value="White Earth Tribal and Community College">
             <option value="Wind River Tribal College">
+            <!-- Other -->
+            <option value="Other">
           </datalist>
-          <p class="hint">Type to filter, or enter your institution if not listed.</p>
+          <p class="hint">Type to filter. Select "Other" if your institution isn't listed.</p>
+          <div id="institution-other-wrap" style="display:none;margin-top:8px">
+            <input type="text" id="f-institution-other" placeholder="Enter your institution name" maxlength="300" autocomplete="off">
+          </div>
         </div>
         <div class="field">
           <label for="f-notes">Additional notes</label>
@@ -596,6 +603,13 @@ async function initAuth() {
 
 initAuth();
 
+// ── Institution "Other" toggle ────────────────────────────────────────
+document.getElementById('f-institution').addEventListener('input', function() {
+  const wrap = document.getElementById('institution-other-wrap');
+  wrap.style.display = this.value.trim().toLowerCase() === 'other' ? 'block' : 'none';
+  if (wrap.style.display === 'none') document.getElementById('f-institution-other').value = '';
+});
+
 // ── Checkbox helpers ──────────────────────────────────────────────────
 function getChecked(name) {
   return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
@@ -639,7 +653,13 @@ document.getElementById('submitForm').addEventListener('submit', async e => {
     audience:        getChecked('audience'),
     service_area:    document.getElementById('f-service-area').value.trim()   || null,
     contact_person:  document.getElementById('f-contact').value.trim()        || null,
-    institution:     document.getElementById('f-institution').value.trim()    || null,
+    institution:     (() => {
+      const v = document.getElementById('f-institution').value.trim();
+      if (v.toLowerCase() === 'other') {
+        return document.getElementById('f-institution-other').value.trim() || null;
+      }
+      return v || null;
+    })(),
     notes:           document.getElementById('f-notes').value.trim()          || null,
     submitted_by:    currentUser.id,
     status:          'pending',
