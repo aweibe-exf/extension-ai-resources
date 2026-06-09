@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#166534"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4ade80" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+
+  <!-- Leaf silhouette (subtle fill to anchor the shape) -->
+  <path d="M16 3 C11 3 5 9 5 16.5 C5 22.5 9.5 29 16 29 C22.5 29 27 22.5 27 16.5 C27 9 21 3 16 3Z"
+        fill="url(#glow)"/>
+
+  <!-- Neural network edges (leaf veins) -->
+  <!-- Top → mid-left -->
+  <line x1="16" y1="5"  x2="9"  y2="15" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+  <!-- Top → mid-right -->
+  <line x1="16" y1="5"  x2="23" y2="13" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+  <!-- Mid-left → mid-right -->
+  <line x1="9"  y1="15" x2="23" y2="13" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+  <!-- Mid-left → bottom -->
+  <line x1="9"  y1="15" x2="16" y2="26" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+  <!-- Mid-right → bottom -->
+  <line x1="23" y1="13" x2="16" y2="26" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+
+  <!-- Nodes -->
+  <!-- Top (apex) -->
+  <circle cx="16" cy="5"  r="2.6" fill="white"/>
+  <!-- Mid-left -->
+  <circle cx="9"  cy="15" r="2.4" fill="white"/>
+  <!-- Mid-right -->
+  <circle cx="23" cy="13" r="2.4" fill="white"/>
+  <!-- Bottom (base) -->
+  <circle cx="16" cy="26" r="2.6" fill="white"/>
+
+  <!-- Inner dot accent on top node (circuit-board hollow feel) -->
+  <circle cx="16" cy="5"  r="1"   fill="#166534"/>
+  <circle cx="16" cy="26" r="1"   fill="#1e3a8a"/>
+</svg>
