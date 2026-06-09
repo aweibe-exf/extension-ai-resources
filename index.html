@@ -1199,6 +1199,7 @@
       <div id="authSignedIn" style="display:none">
         <span class="auth-user-label">Hi, <strong id="authUserName"></strong></span>
         <a href="my-submissions.html" class="btn-ghost" style="margin-left:8px">My Submissions</a>
+        <a href="admin.html" id="adminLink" class="btn-ghost" style="margin-left:8px;display:none">Admin</a>
         <a href="submit.html" class="btn-add" style="margin-left:8px">
           <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 5v14M5 12h14"/>
@@ -2110,32 +2111,38 @@ document.querySelector('.view-toggle').addEventListener('click', e => {
 });
 
 // ── Auth ──────────────────────────────────────────────────────────────
-function updateAuthHeader(user) {
+async function updateAuthHeader(user) {
   currentUser = user;
   const signedOutEl = document.getElementById('authSignedOut');
   const signedInEl  = document.getElementById('authSignedIn');
   const userNameEl  = document.getElementById('authUserName');
+  const adminLinkEl = document.getElementById('adminLink');
 
   if (user) {
     signedOutEl.style.display = 'none';
     signedInEl.style.display  = 'flex';
     if (userNameEl) {
-      // Show first name from full email local-part, or profile name if available
       userNameEl.textContent = user.email ? user.email.split('@')[0] : 'you';
+    }
+    // Show admin link if user is an admin
+    if (adminLinkEl) {
+      const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single();
+      adminLinkEl.style.display = profile?.role === 'admin' ? 'inline-flex' : 'none';
     }
   } else {
     signedOutEl.style.display = 'flex';
     signedInEl.style.display  = 'none';
+    if (adminLinkEl) adminLinkEl.style.display = 'none';
   }
 }
 
 async function initAuth() {
   const { data: { session } } = await sb.auth.getSession();
-  updateAuthHeader(session?.user ?? null);
+  await updateAuthHeader(session?.user ?? null);
 
   // Update header whenever auth state changes (login / logout in another tab)
-  sb.auth.onAuthStateChange((_event, session) => {
-    updateAuthHeader(session?.user ?? null);
+  sb.auth.onAuthStateChange(async (_event, session) => {
+    await updateAuthHeader(session?.user ?? null);
   });
 }
 
