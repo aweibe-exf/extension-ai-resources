@@ -383,6 +383,15 @@ document.getElementById('goForgot').addEventListener('click', e => {
 if (window.location.hash === '#register') activateTab('register');
 
 // ── Helpers ───────────────────────────────────────────────────────────
+function readableError(err) {
+  if (!err) return 'An unknown error occurred.';
+  if (typeof err === 'string') return err;
+  if (err.message && typeof err.message === 'string') return err.message;
+  // Supabase sometimes returns nested error objects
+  const s = JSON.stringify(err);
+  return s === '{}' ? 'Registration failed — email confirmation may be required. Check your inbox or ask your admin to disable email confirmation in Supabase Auth settings.' : s;
+}
+
 function showMsg(prefix, type, msg) {
   const el = document.getElementById(`${prefix}-${type}`);
   el.textContent = msg;
@@ -422,7 +431,7 @@ document.getElementById('signinForm').addEventListener('submit', async e => {
   setLoading(btn, false);
 
   if (error) {
-    showMsg('signin', 'error', error.message);
+    showMsg('signin', 'error', readableError(error));
   } else {
     // Redirect to submit page or wherever they came from
     const next = new URLSearchParams(window.location.search).get('next') || 'index.html';
@@ -444,39 +453,54 @@ document.getElementById('registerForm').addEventListener('submit', async e => {
   if (pass.length < 8)          { showMsg('register', 'error', 'Password must be at least 8 characters.'); return; }
 
   setLoading(btn, true);
-  const { data, error } = await sb.auth.signUp({
-    email,
-    password: pass,
-    options: {
-      data: { full_name: name, institution }
-    }
-  });
+  let data, error;
+  try {
+    ({ data, error } = await sb.auth.signUp({
+      email,
+      password: pass,
+      options: { data: { full_name: name, institution } }
+    }));
+  } catch (e) {
+    setLoading(btn, false);
+    showMsg('register', 'error', readableError(e));
+    return;
+  }
   setLoading(btn, false);
 
   if (error) {
-    showMsg('register', 'error', error.message);
+    showMsg('register', 'error', readableError(error));
     return;
   }
 
-  // Update profile with name + institution (trigger creates the row)
-  if (data.user) {
-    await sb.from('profiles').upsert({
-      id: data.user.id,
-      email,
-      full_name: name,
-      institution: institution || null,
-    });
+  // data.user exists but data.session is null → email confirmation required
+  if (data?.user && !data?.session) {
+    showMsg('register', 'success',
+      'Almost there! Check your email for a confirmation link, then come back to sign in.'
+    );
+    return;
   }
 
-  showMsg('register', 'success',
-    data.session
-      ? 'Account created! Redirecting…'
-      : 'Account created! Check your email to confirm your address, then sign in.'
-  );
-
-  if (data.session) {
-    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+  // data is empty → usually means email confirmation is ON but email failed to send
+  if (!data?.user) {
+    showMsg('register', 'error',
+      'Registration could not complete. If this keeps happening, email confirmation may need to be disabled in Supabase — ask your admin.'
+    );
+    return;
   }
+
+  // Fully signed up with session (email confirmation is OFF)
+  await sb.from('profiles').upsert({
+    id: data.user.id,
+    email,
+    full_name: name,
+    institution: institution || null,
+  });
+
+  showMsg('register', 'success', 'Account created! Taking you to the directory…');
+  setTimeout(() => {
+    const next = new URLSearchParams(window.location.search).get('next') || 'index.html';
+    window.location.href = next;
+  }, 1200);
 });
 
 // ── Forgot Password ───────────────────────────────────────────────────
