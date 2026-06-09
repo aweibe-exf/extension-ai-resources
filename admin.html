@@ -556,6 +556,142 @@
   </div>
 </div>
 
+<!-- ── Admin edit resource modal ── -->
+<div class="modal-overlay" id="adminEditModal" role="dialog" aria-modal="true" aria-labelledby="adminEditTitle">
+  <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
+    <div class="modal-header" style="position:sticky;top:0;background:var(--surface);z-index:1">
+      <h2 id="adminEditTitle">Edit Resource</h2>
+      <button class="modal-close" id="adminEditClose" aria-label="Close">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+      <p id="adminEditError" style="display:none;color:var(--error);font-size:13px;padding:8px 12px;background:#fef2f2;border-radius:6px;margin:0"></p>
+
+      <!-- Row 1: Title + Status -->
+      <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end">
+        <div class="modal-field">
+          <label for="ae-title">Title <span style="color:var(--error)">*</span></label>
+          <input type="text" id="ae-title" maxlength="300">
+        </div>
+        <div class="modal-field">
+          <label for="ae-status">Status</label>
+          <select id="ae-status" style="padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;font-family:inherit">
+            <option value="pending">⏳ Pending</option>
+            <option value="approved">✓ Approved</option>
+            <option value="rejected">✗ Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Row 2: Category + Subcategory -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field">
+          <label for="ae-category">Category <span style="color:var(--error)">*</span></label>
+          <select id="ae-category" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;font-family:inherit">
+            <option value="">— Select —</option>
+            <option>AI Tools &amp; Platforms</option>
+            <option>Curricula &amp; Training</option>
+            <option>Policy &amp; Ethics</option>
+            <option>Research &amp; Publications</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label for="ae-subcategory">Subcategory</label>
+          <input type="text" id="ae-subcategory" maxlength="200">
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="modal-field">
+        <label for="ae-description">Description</label>
+        <textarea id="ae-description" rows="3" style="resize:vertical"></textarea>
+      </div>
+
+      <!-- Link -->
+      <div class="modal-field">
+        <label for="ae-link">Link / URL</label>
+        <input type="text" id="ae-link" placeholder="https://" maxlength="2000">
+      </div>
+
+      <!-- Institution + Contact -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field">
+          <label for="ae-institution">Institution</label>
+          <input type="text" id="ae-institution" list="ae-institution-list" autocomplete="off" maxlength="300">
+          <datalist id="ae-institution-list">
+            <option value="Extension Foundation">
+            <option value="Journal of Extension">
+            <option value="NDEET (National Digital Extension Education Team)">
+            <option value="Auburn University"><option value="University of Alaska Fairbanks"><option value="University of Arizona"><option value="University of Arkansas"><option value="University of California Agriculture and Natural Resources"><option value="Colorado State University"><option value="University of Connecticut"><option value="University of Delaware"><option value="University of Florida"><option value="University of Georgia"><option value="University of Hawaii at Manoa"><option value="University of Idaho"><option value="University of Illinois Urbana-Champaign"><option value="Purdue University"><option value="Iowa State University"><option value="Kansas State University"><option value="University of Kentucky"><option value="Louisiana State University AgCenter"><option value="University of Maine"><option value="University of Maryland"><option value="University of Maryland Eastern Shore"><option value="University of Massachusetts Amherst"><option value="Michigan State University"><option value="University of Minnesota Extension"><option value="Mississippi State University Extension"><option value="University of Missouri Extension"><option value="Montana State University Extension"><option value="University of Nebraska-Lincoln Extension"><option value="University of Nevada Cooperative Extension"><option value="University of New Hampshire Cooperative Extension"><option value="Rutgers Cooperative Extension"><option value="New Mexico State University"><option value="Cornell Cooperative Extension"><option value="NC State Extension"><option value="North Dakota State University Extension"><option value="Ohio State University Extension"><option value="Oklahoma State University Extension"><option value="Oregon State University Extension"><option value="Penn State Extension"><option value="University of Rhode Island Extension"><option value="Clemson Cooperative Extension"><option value="South Dakota State University Extension"><option value="University of Tennessee Extension"><option value="Texas A&amp;M AgriLife Extension"><option value="Utah State University Extension"><option value="University of Vermont Extension"><option value="Virginia Cooperative Extension"><option value="Washington State University Extension"><option value="West Virginia University Extension"><option value="University of Wisconsin-Madison Division of Extension"><option value="University of Wyoming Extension"><option value="University of Guam Cooperative Extension"><option value="University of Puerto Rico Extension"><option value="University of the Virgin Islands Extension"><option value="American Samoa Community College Extension"><option value="Northern Marianas College Extension">
+            <option value="Alabama A&amp;M University"><option value="Alcorn State University"><option value="Delaware State University"><option value="Florida A&amp;M University"><option value="Fort Valley State University"><option value="Kentucky State University"><option value="Langston University"><option value="Lincoln University (Missouri)"><option value="Lincoln University (Pennsylvania)"><option value="Mississippi Valley State University"><option value="Morgan State University"><option value="North Carolina A&amp;T State University"><option value="Prairie View A&amp;M University"><option value="South Carolina State University"><option value="Southern University and A&amp;M College"><option value="Tennessee State University"><option value="Tuskegee University"><option value="University of Arkansas at Pine Bluff"><option value="Virginia State University"><option value="West Virginia State University">
+            <option value="Aaniiih Nakoda College"><option value="Bay Mills Community College"><option value="Blackfeet Community College"><option value="Cankdeska Cikana Community College"><option value="Chief Dull Knife College"><option value="College of Menominee Nation"><option value="College of the Muscogee Nation"><option value="Dine College"><option value="Fond du Lac Tribal and Community College"><option value="Fort Berthold Community College"><option value="Fort Peck Community College"><option value="Ilisagvik College"><option value="Institute of American Indian Arts"><option value="Keweenaw Bay Ojibwa Community College"><option value="Lac Courte Oreilles Ojibwa Community College"><option value="Leech Lake Tribal College"><option value="Little Big Horn College"><option value="Little Priest Tribal College"><option value="Navajo Technical University"><option value="Nebraska Indian Community College"><option value="Northwest Indian College"><option value="Oglala Lakota College"><option value="Red Lake Nation College"><option value="Saginaw Chippewa Tribal College"><option value="Salish Kootenai College"><option value="Sinte Gleska University"><option value="Sisseton Wahpeton College"><option value="Sitting Bull College"><option value="Southwestern Indian Polytechnic Institute"><option value="Stone Child College"><option value="Tohono O'odham Community College"><option value="Turtle Mountain Community College"><option value="United Tribes Technical College"><option value="White Earth Tribal and Community College"><option value="Wind River Tribal College">
+            <option value="Other">
+          </datalist>
+        </div>
+        <div class="modal-field">
+          <label for="ae-contact">Contact person</label>
+          <input type="text" id="ae-contact" maxlength="200">
+        </div>
+      </div>
+
+      <!-- Service area -->
+      <div class="modal-field">
+        <label for="ae-service-area">Service area</label>
+        <input type="text" id="ae-service-area" maxlength="300" placeholder="e.g. National, Northeast, California">
+      </div>
+
+      <!-- Programs -->
+      <div class="modal-field">
+        <label>Programs</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:4px">
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="4-H"> 4-H</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Agriculture"> Agriculture</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Community Development"> Community Development</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Family &amp; Consumer Sciences"> Family &amp; Consumer Sciences</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Forestry &amp; Natural Resources"> Forestry &amp; Natural Resources</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Master Gardener"> Master Gardener</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Nutrition"> Nutrition</label>
+          <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-programs" value="Other"> Other</label>
+        </div>
+      </div>
+
+      <!-- Knowledge level + Audience -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="modal-field">
+          <label>Knowledge level</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:4px">
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-knowledge" value="Beginner"> Beginner</label>
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-knowledge" value="Intermediate"> Intermediate</label>
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-knowledge" value="Advanced"> Advanced</label>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Audience</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:4px">
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-audience" value="Extension Professionals"> Extension Professionals</label>
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-audience" value="Clientele / Public"> Clientele / Public</label>
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-audience" value="Youth"> Youth</label>
+            <label style="font-weight:400;font-size:13px"><input type="checkbox" name="ae-audience" value="Volunteers"> Volunteers</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="modal-field">
+        <label for="ae-notes">Notes</label>
+        <textarea id="ae-notes" rows="2" style="resize:vertical"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);margin-top:0">
+      <button class="btn-approve" id="adminEditSave">Save changes</button>
+      <button class="btn-cancel-modal" id="adminEditCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Assign resource modal ── -->
 <div class="modal-overlay" id="assignModal" role="dialog" aria-modal="true" aria-labelledby="assignTitle">
   <div class="modal" style="max-width:400px">
@@ -904,14 +1040,15 @@ function renderResourcesTable() {
         <td>${formatDate(row.created_at)}</td>
         <td>${esc(submitter)}</td>
         <td style="white-space:nowrap">
+          <button class="btn-sm" onclick="openAdminEdit('${row.id}')">Edit</button>
           ${row.status !== 'approved'
-            ? `<button class="btn-sm" onclick="quickApprove('${row.id}')">Approve</button> `
+            ? ` <button class="btn-sm" onclick="quickApprove('${row.id}')">Approve</button>`
             : ''}
           ${row.status !== 'rejected'
-            ? `<button class="btn-sm" onclick="openRejectModal('${row.id}')">Reject</button> `
+            ? ` <button class="btn-sm" onclick="openRejectModal('${row.id}')">Reject</button>`
             : ''}
-          <button class="btn-sm" onclick="deleteResource('${row.id}')" style="color:var(--error);border-color:#fecaca">Delete</button>
-          ${!row.submitted_by ? `<button class="btn-sm" onclick="assignResource('${row.id}')" title="Assign to a user account">Assign</button>` : ''}
+          <button class="btn-sm" onclick="deleteResource('${row.id}')" style="color:var(--error);border-color:#fecaca;margin-left:2px">Delete</button>
+          ${!row.submitted_by ? ` <button class="btn-sm" onclick="assignResource('${row.id}')" title="Assign to a user account">Assign</button>` : ''}
         </td>
       </tr>`;
     }).join('')}
@@ -1001,6 +1138,115 @@ document.getElementById('confirmAssign').addEventListener('click', async () => {
     loadResources();
   }
 })
+
+// ── Admin edit resource ───────────────────────────────────────────────
+let adminEditId = null;
+
+function toArr(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.filter(Boolean);
+  return String(val).split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function aeGetChecked(name) {
+  return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+}
+
+function aeSetChecked(name, values) {
+  const arr = toArr(values);
+  document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+    cb.checked = arr.includes(cb.value);
+  });
+}
+
+function closeAdminEdit() {
+  document.getElementById('adminEditModal').classList.remove('open');
+  adminEditId = null;
+}
+
+document.getElementById('adminEditClose').addEventListener('click', closeAdminEdit);
+document.getElementById('adminEditCancel').addEventListener('click', closeAdminEdit);
+document.getElementById('adminEditModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('adminEditModal')) closeAdminEdit();
+});
+
+async function openAdminEdit(id) {
+  adminEditId = id;
+  const errEl = document.getElementById('adminEditError');
+  errEl.style.display = 'none';
+
+  // Fetch full record
+  const { data, error } = await sb.from('resources')
+    .select('id,title,category,subcategory,description,link,institution,contact_person,service_area,programs,knowledge_level,audience,notes,status')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    alert('Could not load resource: ' + (error?.message || 'not found'));
+    return;
+  }
+
+  document.getElementById('ae-title').value        = data.title || '';
+  document.getElementById('ae-status').value       = data.status || 'pending';
+  document.getElementById('ae-category').value     = data.category || '';
+  document.getElementById('ae-subcategory').value  = data.subcategory || '';
+  document.getElementById('ae-description').value  = data.description || '';
+  document.getElementById('ae-link').value         = data.link || '';
+  document.getElementById('ae-institution').value  = data.institution || '';
+  document.getElementById('ae-contact').value      = data.contact_person || '';
+  document.getElementById('ae-service-area').value = data.service_area || '';
+  document.getElementById('ae-notes').value        = data.notes || '';
+
+  aeSetChecked('ae-programs',  data.programs);
+  aeSetChecked('ae-knowledge', data.knowledge_level);
+  aeSetChecked('ae-audience',  data.audience);
+
+  document.getElementById('adminEditModal').classList.add('open');
+  document.getElementById('ae-title').focus();
+}
+
+document.getElementById('adminEditSave').addEventListener('click', async () => {
+  const errEl = document.getElementById('adminEditError');
+  const btn   = document.getElementById('adminEditSave');
+  errEl.style.display = 'none';
+
+  const title = document.getElementById('ae-title').value.trim();
+  const cat   = document.getElementById('ae-category').value;
+  if (!title) { errEl.textContent = 'Title is required.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const updates = {
+    title,
+    status:         document.getElementById('ae-status').value,
+    category:       cat,
+    subcategory:    document.getElementById('ae-subcategory').value.trim()  || null,
+    description:    document.getElementById('ae-description').value.trim()  || null,
+    link:           document.getElementById('ae-link').value.trim()         || null,
+    institution:    document.getElementById('ae-institution').value.trim()  || null,
+    contact_person: document.getElementById('ae-contact').value.trim()      || null,
+    service_area:   document.getElementById('ae-service-area').value.trim() || null,
+    notes:          document.getElementById('ae-notes').value.trim()        || null,
+    programs:       aeGetChecked('ae-programs'),
+    knowledge_level: aeGetChecked('ae-knowledge'),
+    audience:       aeGetChecked('ae-audience'),
+    reviewed_by:    currentUser.id,
+    reviewed_at:    new Date().toISOString(),
+  };
+
+  const { error } = await sb.from('resources').update(updates).eq('id', adminEditId);
+
+  btn.disabled = false; btn.textContent = 'Save changes';
+
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+  } else {
+    closeAdminEdit();
+    loadResources();
+    refreshStats();
+  }
+});
 
 // ── Users ──────────────────────────────────────────────────────────────
 let userFilter = '';
