@@ -564,7 +564,15 @@
         </div>
       </div>
       <div class="modal-field">
-        <label for="edit-notes">Notes</label>
+        <label for="edit-service-area">Service area</label>
+        <select id="edit-service-area" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;font-family:inherit">
+          <option value="">— Select scope —</option>
+          <option value="National">National</option>
+          <option value="Multi-State / Regional">Multi-State / Regional</option>
+          <option value="State">State</option>
+          <option value="County">County</option>
+        </select>
+        <label for="edit-notes" style="margin-top:10px">Notes</label>
         <input type="text" id="edit-notes">
       </div>
     </div>
@@ -620,7 +628,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
 async function loadSubmissions() {
   const { data, error } = await sb
     .from('resources')
-    .select('id, title, category, subcategory, description, link, institution, contact_person, notes, status, rejection_reason, created_at, updated_at')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, service_area, notes, status, rejection_reason, created_at, updated_at')
     .eq('submitted_by', currentUser.id)
     .order('created_at', { ascending: false });
 
@@ -727,8 +735,9 @@ async function openEdit(id) {
   document.getElementById('edit-description').value  = data.description || '';
   document.getElementById('edit-link').value         = data.link || '';
   document.getElementById('edit-institution').value  = data.institution || '';
-  document.getElementById('edit-contact').value      = data.contact_person || '';
-  document.getElementById('edit-notes').value        = data.notes || '';
+  document.getElementById('edit-contact').value       = data.contact_person || '';
+  document.getElementById('edit-service-area').value = data.service_area || '';
+  document.getElementById('edit-notes').value         = data.notes || '';
 
   document.getElementById('modal-error').classList.remove('show');
   document.getElementById('editModal').classList.add('open');
@@ -783,7 +792,8 @@ document.getElementById('modalSave').addEventListener('click', async () => {
       }
       return v || null;
     })(),
-    contact_person: document.getElementById('edit-contact').value.trim()      || null,
+    contact_person: document.getElementById('edit-contact').value.trim()       || null,
+    service_area:   document.getElementById('edit-service-area').value        || null,
     notes:          document.getElementById('edit-notes').value.trim()        || null,
     status:         'pending',  // re-queue for review on edit
   };

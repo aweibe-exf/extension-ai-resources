@@ -639,7 +639,13 @@
       <!-- Service area -->
       <div class="modal-field">
         <label for="ae-service-area">Service area</label>
-        <input type="text" id="ae-service-area" maxlength="300" placeholder="e.g. National, Northeast, California">
+        <select id="ae-service-area" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:#fff;font-family:inherit">
+          <option value="">— Select scope —</option>
+          <option value="National">National</option>
+          <option value="Multi-State / Regional">Multi-State / Regional</option>
+          <option value="State">State</option>
+          <option value="County">County</option>
+        </select>
       </div>
 
       <!-- Programs -->
