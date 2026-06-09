@@ -337,6 +337,28 @@
       </form>
     </section>
 
+    <!-- ── Set Password (invite / password reset return) ── -->
+    <section id="panel-setpassword" class="panel" role="tabpanel" aria-labelledby="cardHeading" style="display:none">
+      <div class="alert alert-error"   id="setpw-error"   role="alert"></div>
+      <div class="alert alert-success" id="setpw-success" role="alert"></div>
+
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:18px;line-height:1.6" id="setpw-intro">
+        Choose a password to complete your account setup.
+      </p>
+
+      <form id="setPasswordForm" novalidate>
+        <div class="field">
+          <label for="setpw-password">New password <span style="color:var(--text-3);font-weight:400">(8+ characters)</span></label>
+          <input type="password" id="setpw-password" autocomplete="new-password" placeholder="••••••••" required minlength="8">
+        </div>
+        <div class="field">
+          <label for="setpw-confirm">Confirm password</label>
+          <input type="password" id="setpw-confirm" autocomplete="new-password" placeholder="••••••••" required minlength="8">
+        </div>
+        <button type="submit" class="btn-primary" id="setpwBtn">Set password &amp; sign in</button>
+      </form>
+    </section>
+
     <div class="card-footer-text">
       <a href="index.html">← Back to the directory</a>
     </div>
@@ -349,8 +371,10 @@ const SUPABASE_URL = 'https://afncxrdjgktpphojkzcj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_CJQO9t5YaKAMLKh5Ra4CyA_J9QvOqkQ';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── Redirect if already logged in ────────────────────────────────────
+// ── Redirect if already logged in (skip on invite/recovery returns) ──
 (async () => {
+  const h = Object.fromEntries(window.location.hash.replace(/^#/,'').split('&').map(p=>p.split('=')).filter(p=>p.length===2));
+  if (h.type === 'invite' || h.type === 'recovery') return; // token flow — don't redirect
   const { data: { session } } = await sb.auth.getSession();
   if (session) window.location.href = 'index.html';
 })();
@@ -525,26 +549,78 @@ document.getElementById('forgotForm').addEventListener('submit', async e => {
   }
 });
 
-// ── Handle password reset redirect (magic link return) ────────────────
-if (window.location.hash === '#reset' || window.location.hash.includes('type=recovery')) {
-  activateTab('forgot');
-  // Supabase handles the token in the URL fragment; on the next onAuthStateChange
-  // with event = 'PASSWORD_RECOVERY' we should show a new password form.
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'PASSWORD_RECOVERY') {
-      const newPass = prompt('Enter your new password (8+ characters):');
-      if (newPass && newPass.length >= 8) {
-        const { error } = await sb.auth.updateUser({ password: newPass });
-        if (error) {
-          alert('Error updating password: ' + error.message);
-        } else {
-          alert('Password updated! You are now signed in.');
-          window.location.href = 'index.html';
-        }
-      }
+// ── Handle invite & password-reset token returns ──────────────────────
+function hashParams() {
+  // Parses key=value pairs from the URL hash (after #)
+  const h = window.location.hash.replace(/^#/, '');
+  return Object.fromEntries(h.split('&').map(p => p.split('=')).filter(p => p.length === 2));
+}
+
+function showSetPassword(heading, intro) {
+  // Hide tabs + all normal panels, show the set-password panel
+  document.querySelector('.tabs').style.display = 'none';
+  document.querySelectorAll('.panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+  const panel = document.getElementById('panel-setpassword');
+  panel.style.display = 'block';
+  panel.classList.add('active');
+  document.getElementById('cardHeading').textContent = heading || 'Set your password';
+  if (intro) document.getElementById('setpw-intro').textContent = intro;
+}
+
+const hp = hashParams();
+const tokenType = hp.type; // 'invite' | 'recovery' | undefined
+
+if (tokenType === 'invite') {
+  showSetPassword('Welcome! Set your password', 'Your invitation is confirmed. Choose a password to activate your account.');
+} else if (tokenType === 'recovery') {
+  showSetPassword('Reset your password', 'Enter a new password for your account.');
+}
+
+// Supabase JS v2 automatically exchanges the token in the hash; listen for the result
+if (tokenType === 'invite' || tokenType === 'recovery') {
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+      // Token was valid — the set-password form is already showing, nothing extra to do
     }
   });
 }
+
+// ── Set-password form submit ───────────────────────────────────────────
+document.getElementById('setPasswordForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl  = document.getElementById('setpw-error');
+  const okEl   = document.getElementById('setpw-success');
+  const btn    = document.getElementById('setpwBtn');
+  errEl.textContent = ''; errEl.className = 'alert alert-error';
+  okEl.textContent  = ''; okEl.className  = 'alert alert-success';
+
+  const pass    = document.getElementById('setpw-password').value;
+  const confirm = document.getElementById('setpw-confirm').value;
+
+  if (pass.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    return;
+  }
+  if (pass !== confirm) {
+    errEl.textContent = 'Passwords do not match.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const { error } = await sb.auth.updateUser({ password: pass });
+
+  if (error) {
+    errEl.textContent = error.message;
+    btn.disabled = false;
+    btn.textContent = 'Set password & sign in';
+    return;
+  }
+
+  okEl.textContent = '✓ Password set! Taking you to the directory…';
+  setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+});
 </script>
 </body>
 </html>
