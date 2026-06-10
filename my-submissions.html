@@ -629,7 +629,7 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
 async function loadSubmissions() {
   const { data, error } = await sb
     .from('resources')
-    .select('id, title, category, subcategory, description, link, institution, contact_person, service_area, notes, status, rejection_reason, created_at, updated_at')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, service_area, programs, knowledge_level, audience, notes, status, rejection_reason, created_at, updated_at')
     .eq('submitted_by', currentUser.id)
     .order('created_at', { ascending: false });
 
@@ -653,6 +653,7 @@ async function loadSubmissions() {
     return;
   }
 
+  allData = data; // cache for openEdit to use without a second fetch
   el.innerHTML = `
     <div class="submissions-list" role="list">
       ${data.map(renderSubmission).join('')}
@@ -723,10 +724,10 @@ async function deleteSubmission(id, btn) {
 // ── Edit modal ────────────────────────────────────────────────────────
 let allData = [];
 
-async function openEdit(id) {
-  // Fetch fresh data for this record
-  const { data, error } = await sb.from('resources').select('*').eq('id', id).single();
-  if (error || !data) { alert('Could not load resource data.'); return; }
+function openEdit(id) {
+  // Use already-loaded data — no second fetch needed
+  const data = allData.find(r => r.id === id);
+  if (!data) { alert('Submission not found — try refreshing the page.'); return; }
 
   editingId = id;
   document.getElementById('edit-id').value          = id;

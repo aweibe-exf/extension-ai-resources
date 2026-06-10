@@ -972,7 +972,7 @@ let resourceFilter = { search: '', status: '' };
 async function loadResources() {
   const { data, error } = await sb
     .from('resources')
-    .select('id, title, category, status, institution, created_at, submitted_by')
+    .select('id, title, category, subcategory, description, link, institution, contact_person, service_area, programs, knowledge_level, audience, notes, status, created_at, submitted_by')
     .order('created_at', { ascending: false });
 
   if (error) { document.getElementById('resourcesTableContent').innerHTML = `<p style="padding:24px;color:var(--error)">${esc(error.message)}</p>`; return; }
@@ -1179,21 +1179,14 @@ document.getElementById('adminEditModal').addEventListener('click', e => {
   if (e.target === document.getElementById('adminEditModal')) closeAdminEdit();
 });
 
-async function openAdminEdit(id) {
+function openAdminEdit(id) {
+  // Use already-loaded data from allResources to avoid a second fetch
+  const data = allResources.find(r => r.id === id);
+  if (!data) { alert('Resource not found — try refreshing the page.'); return; }
+
   adminEditId = id;
   const errEl = document.getElementById('adminEditError');
   errEl.style.display = 'none';
-
-  // Fetch full record
-  const { data, error } = await sb.from('resources')
-    .select('id,title,category,subcategory,description,link,institution,contact_person,service_area,programs,knowledge_level,audience,notes,status')
-    .eq('id', id)
-    .single();
-
-  if (error || !data) {
-    alert('Could not load resource: ' + (error?.message || 'not found'));
-    return;
-  }
 
   document.getElementById('ae-title').value        = data.title || '';
   document.getElementById('ae-status').value       = data.status || 'pending';
