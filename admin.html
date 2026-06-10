@@ -1188,26 +1188,32 @@ function openAdminEdit(id) {
   if (!data) { alert('Resource not found — try refreshing the page.'); return; }
 
   adminEditId = id;
-  const errEl = document.getElementById('adminEditError');
-  errEl.style.display = 'none';
+  try {
+    const errEl = document.getElementById('adminEditError');
+    errEl.style.display = 'none';
 
-  document.getElementById('ae-title').value        = data.title || '';
-  document.getElementById('ae-status').value       = data.status || 'pending';
-  document.getElementById('ae-category').value     = data.category || '';
-  document.getElementById('ae-subcategory').value  = data.subcategory || '';
-  document.getElementById('ae-description').value  = data.description || '';
-  document.getElementById('ae-link').value         = data.link || '';
-  document.getElementById('ae-institution').value  = data.institution || '';
-  document.getElementById('ae-contact').value      = data.contact_person || '';
-  document.getElementById('ae-service-area').value = data.service_area || '';
-  document.getElementById('ae-notes').value        = data.notes || '';
+    document.getElementById('ae-title').value        = data.title || '';
+    document.getElementById('ae-status').value       = data.status || 'pending';
+    document.getElementById('ae-category').value     = data.category || '';
+    document.getElementById('ae-subcategory').value  = data.subcategory || '';
+    document.getElementById('ae-description').value  = data.description || '';
+    document.getElementById('ae-link').value         = data.link || '';
+    document.getElementById('ae-institution').value  = data.institution || '';
+    document.getElementById('ae-contact').value      = data.contact_person || '';
+    document.getElementById('ae-service-area').value = data.service_area || '';
+    document.getElementById('ae-notes').value        = data.notes || '';
 
-  aeSetChecked('ae-programs',  data.programs);
-  aeSetChecked('ae-knowledge', data.knowledge_level);
-  aeSetChecked('ae-audience',  data.audience);
+    aeSetChecked('ae-programs',  data.programs);
+    aeSetChecked('ae-knowledge', data.knowledge_level);
+    aeSetChecked('ae-audience',  data.audience);
 
-  document.getElementById('adminEditModal').classList.add('open');
-  document.getElementById('ae-title').focus();
+    console.log('[openAdminEdit] fields set, ae-title value:', document.getElementById('ae-title').value);
+    document.getElementById('adminEditModal').classList.add('open');
+    console.log('[openAdminEdit] modal open class added, classes:', document.getElementById('adminEditModal').className);
+  } catch(e) {
+    console.error('[openAdminEdit] ERROR:', e);
+    alert('Edit error: ' + e.message);
+  }
 }
 
 document.getElementById('adminEditSave').addEventListener('click', async () => {
