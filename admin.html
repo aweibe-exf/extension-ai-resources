@@ -1180,8 +1180,11 @@ document.getElementById('adminEditModal').addEventListener('click', e => {
 });
 
 function openAdminEdit(id) {
+  console.log('[openAdminEdit] called with id:', id);
+  console.log('[openAdminEdit] allResources length:', allResources.length);
   // Use already-loaded data from allResources to avoid a second fetch
   const data = allResources.find(r => r.id === id);
+  console.log('[openAdminEdit] found data:', data);
   if (!data) { alert('Resource not found — try refreshing the page.'); return; }
 
   adminEditId = id;

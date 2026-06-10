@@ -725,8 +725,11 @@ async function deleteSubmission(id, btn) {
 let allData = [];
 
 function openEdit(id) {
+  console.log('[openEdit] called with id:', id);
+  console.log('[openEdit] allData length:', allData.length);
   // Use already-loaded data — no second fetch needed
   const data = allData.find(r => r.id === id);
+  console.log('[openEdit] found data:', data);
   if (!data) { alert('Submission not found — try refreshing the page.'); return; }
 
   editingId = id;
