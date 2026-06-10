@@ -1180,40 +1180,31 @@ document.getElementById('adminEditModal').addEventListener('click', e => {
 });
 
 function openAdminEdit(id) {
-  console.log('[openAdminEdit] called with id:', id);
-  console.log('[openAdminEdit] allResources length:', allResources.length);
   // Use already-loaded data from allResources to avoid a second fetch
   const data = allResources.find(r => r.id === id);
-  console.log('[openAdminEdit] found data:', data);
   if (!data) { alert('Resource not found — try refreshing the page.'); return; }
 
   adminEditId = id;
-  try {
-    const errEl = document.getElementById('adminEditError');
-    errEl.style.display = 'none';
+  const errEl = document.getElementById('adminEditError');
+  errEl.style.display = 'none';
 
-    document.getElementById('ae-title').value        = data.title || '';
-    document.getElementById('ae-status').value       = data.status || 'pending';
-    document.getElementById('ae-category').value     = data.category || '';
-    document.getElementById('ae-subcategory').value  = data.subcategory || '';
-    document.getElementById('ae-description').value  = data.description || '';
-    document.getElementById('ae-link').value         = data.link || '';
-    document.getElementById('ae-institution').value  = data.institution || '';
-    document.getElementById('ae-contact').value      = data.contact_person || '';
-    document.getElementById('ae-service-area').value = data.service_area || '';
-    document.getElementById('ae-notes').value        = data.notes || '';
+  document.getElementById('ae-title').value        = data.title || '';
+  document.getElementById('ae-status').value       = data.status || 'pending';
+  document.getElementById('ae-category').value     = data.category || '';
+  document.getElementById('ae-subcategory').value  = data.subcategory || '';
+  document.getElementById('ae-description').value  = data.description || '';
+  document.getElementById('ae-link').value         = data.link || '';
+  document.getElementById('ae-institution').value  = data.institution || '';
+  document.getElementById('ae-contact').value      = data.contact_person || '';
+  document.getElementById('ae-service-area').value = data.service_area || '';
+  document.getElementById('ae-notes').value        = data.notes || '';
 
-    aeSetChecked('ae-programs',  data.programs);
-    aeSetChecked('ae-knowledge', data.knowledge_level);
-    aeSetChecked('ae-audience',  data.audience);
+  aeSetChecked('ae-programs',  data.programs);
+  aeSetChecked('ae-knowledge', data.knowledge_level);
+  aeSetChecked('ae-audience',  data.audience);
 
-    console.log('[openAdminEdit] fields set, ae-title value:', document.getElementById('ae-title').value);
-    document.getElementById('adminEditModal').classList.add('open');
-    console.log('[openAdminEdit] modal open class added, classes:', document.getElementById('adminEditModal').className);
-  } catch(e) {
-    console.error('[openAdminEdit] ERROR:', e);
-    alert('Edit error: ' + e.message);
-  }
+  document.getElementById('adminEditModal').classList.add('open');
+  document.getElementById('ae-title').focus();
 }
 
 document.getElementById('adminEditSave').addEventListener('click', async () => {
