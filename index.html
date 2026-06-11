@@ -1111,16 +1111,60 @@
       .hero-stats { gap: 20px; padding: 12px 20px; }
       .filters-bar { position: static; }
       .filters-inner { padding: 12px 16px; overflow-x: auto; }
-      .filters-row { flex-wrap: nowrap; }
+      .filters-row { flex-wrap: wrap; gap: 8px; }
       .main { padding: 20px 16px 48px; }
       .cards-grid { grid-template-columns: 1fr; }
-      .inst-input { width: 180px; }
+      .inst-input { width: 160px; }
+      .results-bar { gap: 8px; }
+      .sort-wrap label { display: none; } /* hide "Sort by" label, keep select */
     }
 
     @media (max-width: 600px) {
       .hero { padding: 36px 16px; }
       .hero-stats { flex-direction: column; gap: 12px; }
       .brand-text-main { font-size: 13px; }
+
+      /* ── List view ── */
+      .list-item {
+        flex-wrap: wrap;
+        padding: 12px;
+        gap: 6px 10px;
+      }
+      .list-accent { display: none; } /* drop the left bar to save horizontal space */
+      .list-main { flex: 1 1 100%; min-width: 0; }
+      .list-title { min-width: 0; font-size: 14px; }
+      .list-right {
+        flex: 0 0 auto;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 2px;
+      }
+
+      /* ── Compact view ── */
+      /* On mobile, compact row = [dot] [badge] [title] [link]
+         Squeeze out institution and tags since there's no room */
+      .compact-item { padding: 9px 12px; gap: 8px; }
+      .compact-inst { display: none; }
+      .compact-tags { display: none; }
+      .compact-title { font-size: 13px; }
+      .compact-no-link { display: none; }
+
+      /* ── Filters ── */
+      .filters-inner { padding: 10px 12px; gap: 8px; }
+      .filter-label { display: none; }
+      .category-pills { gap: 5px; }
+      .pill { padding: 5px 11px; font-size: 12px; }
+      .vdiv { display: none; }
+      .inst-input { width: 100%; font-size: 13px; }
+      .inst-wrap { flex: 1 1 100%; } /* institution input takes full row on mobile */
+      .filter-select { font-size: 12px; padding: 5px 26px 5px 10px; }
+      .inst-dropdown { min-width: 0; width: 100%; }
+      .clear-all { margin-left: 0; }
+
+      /* ── Results bar ── */
+      .per-page-wrap span { display: none; } /* hide "Show:" label */
+      .per-page-btn { padding: 4px 10px; font-size: 12px; }
     }
 
     /* ── Auth nav ── */
