@@ -19,9 +19,9 @@
       --text: #0f172a;
       --text-2: #475569;
       --text-3: #64748b;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-bg: #eff6ff;
+      --primary: #006837;
+      --primary-dark: #004d29;
+      --primary-bg: #e8f3ec;
       --radius-lg: 14px;
       --radius: 10px;
       --radius-sm: 6px;
@@ -71,7 +71,7 @@
     .brand-icon {
       width: 38px;
       height: 38px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      background: #006837;
       border-radius: var(--radius-sm);
       display: grid;
       place-items: center;
@@ -114,7 +114,7 @@
     .header-search input:focus {
       border-color: var(--primary);
       background: var(--surface);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+      box-shadow: 0 0 0 3px rgba(0,104,55,0.1);
     }
 
     .header-search input::placeholder { color: var(--text-3); }
@@ -155,12 +155,12 @@
     .btn-add:hover {
       background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+      box-shadow: 0 4px 14px rgba(0,104,55,0.35);
     }
 
     /* ── Hero ── */
     .hero {
-      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #4f46e5 100%);
+      background: linear-gradient(135deg, #003d20 0%, #006837 60%, #1f8a55 100%);
       padding: 52px 24px;
       text-align: center;
       position: relative;
@@ -764,7 +764,7 @@
     .link-btn:hover {
       background: var(--primary-dark);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+      box-shadow: 0 4px 12px rgba(0,104,55,0.3);
     }
 
     .no-link {
@@ -1200,6 +1200,8 @@
       color: var(--text-3);
       white-space: nowrap;
     }
+      .brand-logo { height: 36px; width: auto; display: block; }
+    .brand-logo + div, .brand-logo + span { border-left: 2px solid #f58220; padding-left: 12px; margin-left: 2px; font-weight: 600; }
   </style>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
@@ -1211,14 +1213,9 @@
 <header class="header">
   <div class="header-inner">
     <div class="brand">
-      <div class="brand-icon">
-        <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-          <circle cx="12" cy="10" r="3"/><path d="M12 7v1M12 12v1M9 10H8M16 10h-1"/>
-        </svg>
-      </div>
+      <img class="brand-logo" src="assets/cooperative-extension-logo.png" alt="Cooperative Extension">
       <div>
-        <div class="brand-text-main">Cooperative Extension AI Assets</div>
+        <div class="brand-text-main">AI Assets</div>
       </div>
     </div>
 
@@ -1412,10 +1409,10 @@
 
   <div class="footer-logos">
     <a class="footer-logo" href="https://extension.org" target="_blank" rel="noopener noreferrer">
-      <img src="https://extension.org/wp-content/uploads/2026/02/EXF-black.png" alt="Extension Foundation">
+      <img src="assets/extension-foundation-logo.webp" alt="Extension Foundation">
     </a>
     <a class="footer-logo" href="https://extension.org" target="_blank" rel="noopener noreferrer">
-      <img src="https://extension.org/wp-content/uploads/2026/02/CE-logo-black.png" alt="Cooperative Extension">
+      <img src="assets/cooperative-extension-logo.png" alt="Cooperative Extension">
     </a>
     <a class="footer-logo" href="https://nifa.usda.gov" target="_blank" rel="noopener noreferrer">
       <img src="https://extension.org/wp-content/uploads/2026/02/NIFA-logo-black.png" alt="USDA NIFA">

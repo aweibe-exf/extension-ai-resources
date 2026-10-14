@@ -19,9 +19,9 @@
       --text: #0f172a;
       --text-2: #475569;
       --text-3: #64748b;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-bg: #eff6ff;
+      --primary: #006837;
+      --primary-dark: #004d29;
+      --primary-bg: #e8f3ec;
       --success: #059669;
       --success-bg: #ecfdf5;
       --warning: #d97706;
@@ -68,7 +68,7 @@
 
     .brand-icon {
       width: 34px; height: 34px;
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      background: #006837;
       border-radius: var(--radius-sm);
       display: grid; place-items: center;
     }
@@ -394,6 +394,8 @@
     .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
     :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
     input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
+      .brand-logo { height: 36px; width: auto; display: block; }
+    .brand-logo + div, .brand-logo + span { border-left: 2px solid #f58220; padding-left: 12px; margin-left: 2px; font-weight: 600; }
   </style>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
@@ -402,12 +404,7 @@
 <header class="header">
   <div class="header-inner">
     <a href="index.html" class="brand">
-      <div class="brand-icon">
-        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
+      <img class="brand-logo" src="assets/cooperative-extension-logo.png" alt="Cooperative Extension">
       <span class="brand-text">AI Assets</span>
     </a>
     <span class="admin-badge">Admin</span>
@@ -762,7 +759,7 @@ async function init() {
   if (!profile || profile.role !== 'admin') {
     document.body.innerHTML = `<div style="padding:80px;text-align:center;font-family:sans-serif">
       <h2>Access denied</h2><p style="margin-top:8px;color:#64748b">This page is for admins only.</p>
-      <a href="index.html" style="display:inline-block;margin-top:20px;color:#2563eb">← Back to directory</a>
+      <a href="index.html" style="display:inline-block;margin-top:20px;color:#006837">← Back to directory</a>
     </div>`;
     return;
   }

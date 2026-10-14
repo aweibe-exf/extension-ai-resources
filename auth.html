@@ -19,9 +19,9 @@
       --text: #0f172a;
       --text-2: #475569;
       --text-3: #64748b;
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --primary-bg: #eff6ff;
+      --primary: #006837;
+      --primary-dark: #004d29;
+      --primary-bg: #e8f3ec;
       --success: #059669;
       --success-bg: #ecfdf5;
       --error: #dc2626;
@@ -53,7 +53,7 @@
     }
 
     .card-header {
-      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      background: linear-gradient(135deg, #003d20 0%, #006837 100%);
       padding: 28px 32px;
       text-align: center;
     }
@@ -155,7 +155,7 @@
 
     input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+      box-shadow: 0 0 0 3px rgba(0,104,55,0.1);
     }
 
     input::placeholder { color: var(--text-3); }
@@ -175,7 +175,7 @@
       margin-top: 4px;
     }
 
-    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(0,104,55,0.3); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* Alert messages */
@@ -247,6 +247,10 @@
     }
 
     input:focus-visible { outline: none; }
+      .brand-logo { height: 36px; width: auto; display: block; }
+    .brand-logo + div, .brand-logo + span { border-left: 2px solid #f58220; padding-left: 12px; margin-left: 2px; font-weight: 600; }
+      .card-header .brand-logo { background: #fff; padding: 8px 14px; border-radius: 8px; height: 50px; }
+    .card-header .brand-logo + span { border-left-color: #f58220; }
   </style>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
@@ -256,13 +260,8 @@
 
   <div class="card-header">
     <a href="index.html">
-      <div class="brand-icon">
-        <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
-          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-      <span class="brand-name">Cooperative Extension<br>AI Assets</span>
+      <img class="brand-logo" src="assets/cooperative-extension-logo.png" alt="Cooperative Extension">
+      <span class="brand-name">AI Assets</span>
     </a>
     <h1 id="cardHeading">Sign In</h1>
   </div>
