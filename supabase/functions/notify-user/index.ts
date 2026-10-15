@@ -11,7 +11,7 @@ const MAILGUN_API_KEY  = Deno.env.get('MAILGUN_API_KEY')!;
 const MAILGUN_DOMAIN   = Deno.env.get('MAILGUN_DOMAIN')!;
 const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const SITE_URL         = Deno.env.get('SITE_URL') ?? 'https://aweibe-exf.github.io/extension-ai-resources';
+const SITE_URL         = Deno.env.get('SITE_URL') ?? 'https://ai-resources.extension.org';
 
 serve(async (req) => {
   try {
@@ -48,7 +48,7 @@ serve(async (req) => {
         Great news — your resource <strong>${record.title}</strong> has been reviewed and approved.
         It's now live in the Cooperative Extension AI Assets directory.
       </p>
-      <a href="${SITE_URL}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:white;text-decoration:none;border-radius:6px;font-family:sans-serif;font-weight:600">
+      <a href="${SITE_URL}" style="display:inline-block;padding:10px 20px;background:#006837;color:white;text-decoration:none;border-radius:6px;font-family:sans-serif;font-weight:600">
         View the Directory →
       </a>
       <p style="font-family:sans-serif;font-size:12px;color:#94a3b8;margin-top:24px">

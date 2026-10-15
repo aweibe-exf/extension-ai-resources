@@ -537,9 +537,8 @@ document.getElementById('forgotForm').addEventListener('submit', async e => {
   if (!email) { showMsg('forgot', 'error', 'Please enter your email address.'); return; }
 
   setLoading(btn, true);
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://aweibe-exf.github.io/extension-ai-resources/auth.html'
-  });
+  const { data: resp, error: fnErr } = await sb.functions.invoke('send-reset', { body: { email } });
+  const error = fnErr || (resp && resp.error ? new Error(resp.error) : null);
   setLoading(btn, false);
 
   if (error) {

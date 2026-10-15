@@ -1405,9 +1405,8 @@ async function changeRole(userId, newRole) {
 }
 
 async function sendReset(email) {
-  const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://aweibe-exf.github.io/extension-ai-resources/auth.html'
-  });
+  const { data: resp, error: fnErr } = await sb.functions.invoke('send-reset', { body: { email } });
+  const error = fnErr || (resp && resp.error ? new Error(resp.error) : null);
   if (error) alert('Error: ' + error.message);
   else alert(`Password reset link sent to ${email}`);
 }

@@ -10,7 +10,7 @@ const SUPABASE_URL             = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const MAILGUN_API_KEY          = Deno.env.get('MAILGUN_API_KEY')!;
 const MAILGUN_DOMAIN           = Deno.env.get('MAILGUN_DOMAIN')!;
-const SITE_URL                 = Deno.env.get('SITE_URL') ?? 'https://aweibe-exf.github.io/extension-ai-resources';
+const SITE_URL                 = Deno.env.get('SITE_URL') ?? 'https://ai-resources.extension.org';
 
 const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
           and get started.
         </p>
         <a href="${inviteLink}"
-           style="display:inline-block;margin:20px 0;padding:12px 24px;background:#2563eb;color:#fff;
+           style="display:inline-block;margin:20px 0;padding:12px 24px;background:#006837;color:#fff;
                   text-decoration:none;border-radius:8px;font-weight:600;font-size:15px">
           Accept invitation →
         </a>
